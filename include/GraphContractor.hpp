@@ -55,7 +55,7 @@ private:
 private:
     Graph graph_;
     pathfinding::MultiTargetDijkstra dijkstra_;
-    NodeLevel current_level{0};
+    NodeLevel current_level_{0};
     std::unordered_map<NodeId, std::vector<Edge>> deleted_edges_;
 };
 

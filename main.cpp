@@ -53,7 +53,7 @@ auto main() -> int
         auto own_ch_distance = own_ch_pathfinder.shortestDistanceFromTo(from,
                                                                         to);
         auto own_ch_time = t.elapsed();
-        fmt::print("OWN CH distance:\t{}\n", own_ch_distance);
+        fmt::print("Own CH distance:\t{}\n", own_ch_distance);
         fmt::print("calculated OWN CH distance in: {}s\n", own_ch_time);
 
 

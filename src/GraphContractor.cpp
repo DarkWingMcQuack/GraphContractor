@@ -30,21 +30,31 @@ GraphContractor::GraphContractor(Graph graph)
 auto GraphContractor::contractGraph()
     -> void
 {
-    fmt::print("contracting graph ...\n");
     while(!graphFullContracted()) {
-        current_level++;
-
         auto independent_set = constructIndependentSet();
+
+        fmt::print("contracting level {} with {} nodes in the independed set\n",
+                   current_level_++,
+                   independent_set.size());
 
         auto [shortcuts, nodes] =
             getBestContractions(std::move(independent_set));
 
-        graph_.rebuild(shortcuts, nodes, current_level);
+        fmt::print("adding {} shortcuts for {} nodes\n",
+                   shortcuts.size(),
+                   nodes.size());
+
+        graph_.rebuild(shortcuts, nodes, current_level_);
     }
 
+    fmt::print("contraction done\n");
+    fmt::print("building the fully contracted graph...\n");
+
     graph_.addEdges(std::move(deleted_edges_));
+
     deleted_edges_.clear();
-    fmt::print("graph contracted with {} levels\n", current_level);
+
+    fmt::print("graph fully contracted with {} levels\n", current_level_);
 }
 
 auto GraphContractor::getGraph()
@@ -235,6 +245,8 @@ auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
             shortcuts_added += shortcuts[current_node].size();
         }
     }
+
+    result_vec.clear();
 
     std::sort(std::begin(contracted_nodes),
               std::end(contracted_nodes));

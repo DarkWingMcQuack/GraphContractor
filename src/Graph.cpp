@@ -48,27 +48,15 @@ auto Graph::rebuild(const std::unordered_map<NodeId, std::vector<Edge>>& shortcu
                     NodeLevel level)
     -> void
 {
-    auto forward_fut =
-        std::async(std::launch::async,
-                   [&] {
-                       forward_graph_.rebuild(shortcuts,
-                                              contracted_nodes);
-                   });
+    forward_graph_.rebuild(shortcuts,
+                           contracted_nodes);
 
-    auto backward_fut =
-        std::async(std::launch::async,
-                   [&] {
-                       backward_graph_.rebuildBackward(shortcuts,
-                                                       contracted_nodes);
-                   });
+    backward_graph_.rebuildBackward(shortcuts,
+                                    contracted_nodes);
 
     for(auto node : contracted_nodes) {
         node_levels_[node] = level;
     }
-
-
-    forward_fut.get();
-    backward_fut.get();
 }
 
 
@@ -78,6 +66,7 @@ auto Graph::addEdges(std::unordered_map<NodeId, std::vector<Edge>> new_edges)
     std::unordered_map<NodeId, std::vector<Edge>> forward_edges;
     std::unordered_map<NodeId, std::vector<Edge>> backward_edges;
 
+    fmt::print("build edges\n");
     for(auto&& [from, edges] : std::move(new_edges)) {
         for(auto&& edge : std::move(edges)) {
             const auto& target = edge.getDestination();
@@ -89,20 +78,70 @@ auto Graph::addEdges(std::unordered_map<NodeId, std::vector<Edge>> new_edges)
         }
     }
 
-    auto forward_fut =
-        std::async(std::launch::async,
-                   [&] {
-                       forward_graph_.rebuild(forward_edges, {});
-                   });
+	new_edges.clear();
 
-    auto backward_fut =
-        std::async(std::launch::async,
-                   [&] {
-                       backward_graph_.rebuildBackward(backward_edges, {});
-                   });
+    fmt::print("build edges done\n");
 
-    forward_fut.get();
-    backward_fut.get();
+    fmt::print("rebuild forward\n");
+    forward_graph_.rebuild(forward_edges, {});
+    fmt::print("rebuild forward done\n");
+
+    fmt::print("rebuild back\n");
+
+    backward_graph_.rebuildBackward(backward_edges, {});
+    fmt::print("rebuild back done\n");
+}
+
+auto Graph::getNumberOfNodes() const
+    -> std::uint_fast32_t
+{
+    return node_levels_.size();
+}
+
+auto Graph::getNumberOfEdges() const
+    -> std::uint_fast32_t
+{
+    return forward_graph_.edges_.size();
+}
+
+auto Graph::getLevels() const
+    -> const std::vector<NodeLevel>&
+{
+    return node_levels_;
+}
+
+auto Graph::toString() const
+    -> std::string
+{
+    std::string ret = "Upwards: \n";
+    for(int node{0}; node < getNumberOfNodes(); node++) {
+        auto level = getLevelOf(node);
+        ret += +"(" + std::to_string(level) + ")" + std::to_string(node);
+        ret += " -> ";
+
+        auto outgoing = getForwardEdgesOf(node);
+
+        for(auto edge : outgoing) {
+            ret += std::to_string(edge.getDestination()) + ", ";
+        }
+        ret += "\n";
+    }
+
+    ret += "Downwards: \n";
+    for(int node{0}; node < getNumberOfNodes(); node++) {
+        auto level = getLevelOf(node);
+        ret += +"(" + std::to_string(level) + ")" + std::to_string(node);
+        ret += " -> ";
+
+        auto outgoing = getBackwardEdgesOf(node);
+
+        for(auto edge : outgoing) {
+            ret += std::to_string(edge.getDestination()) + ", ";
+        }
+        ret += "\n";
+    }
+
+    return ret;
 }
 
 
@@ -268,58 +307,4 @@ auto datastructure::readFromNonContractedFile(std::string_view path)
     return Graph{forward_future.get(),
                  backward_future.get(),
                  std::move(node_levels)};
-}
-
-auto Graph::getNumberOfNodes() const
-    -> std::uint_fast32_t
-{
-    return node_levels_.size();
-}
-
-
-auto Graph::getNumberOfEdges() const
-    -> std::uint_fast32_t
-{
-    return forward_graph_.edges_.size();
-}
-
-
-auto Graph::getLevels() const
-    -> const std::vector<NodeLevel>&
-{
-    return node_levels_;
-}
-
-auto Graph::toString() const
-    -> std::string
-{
-    std::string ret = "Upwards: \n";
-    for(int node{0}; node < getNumberOfNodes(); node++) {
-        auto level = getLevelOf(node);
-        ret += +"(" + std::to_string(level) + ")" + std::to_string(node);
-        ret += " -> ";
-
-        auto outgoing = getForwardEdgesOf(node);
-
-        for(auto edge : outgoing) {
-            ret += std::to_string(edge.getDestination()) + ", ";
-        }
-        ret += "\n";
-    }
-
-    ret += "Downwards: \n";
-    for(int node{0}; node < getNumberOfNodes(); node++) {
-        auto level = getLevelOf(node);
-        ret += +"(" + std::to_string(level) + ")" + std::to_string(node);
-        ret += " -> ";
-
-        auto outgoing = getBackwardEdgesOf(node);
-
-        for(auto edge : outgoing) {
-            ret += std::to_string(edge.getDestination()) + ", ";
-        }
-        ret += "\n";
-    }
-
-    return ret;
 }
