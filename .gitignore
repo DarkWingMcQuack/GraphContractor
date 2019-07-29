@@ -1,4 +1,5 @@
 build/
+bin/
 include/parser/generated/*
 .dir-locals.el
 external/

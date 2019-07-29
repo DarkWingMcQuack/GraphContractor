@@ -34,7 +34,7 @@ include(cmake/ccache.cmake)
 # needed for multithreading
 find_package(Threads)
 
-add_executable(GraphContractor src/main.cpp)
+add_executable(GraphContractor main.cpp)
 
 target_sources(GraphContractor
   PUBLIC

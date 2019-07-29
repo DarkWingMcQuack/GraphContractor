@@ -32,7 +32,10 @@ class GraphPart
 {
 public:
     auto getEdgesOf(const NodeId& node) const
-        -> tcb::span<Edge>;
+        -> tcb::span<const Edge>;
+
+    auto getNumberOfEdgesOf(const NodeId& node) const
+        -> std::int_fast32_t;
 
     auto getOffsetArray() const
         -> const std::vector<NodeOffset>&;
