@@ -40,10 +40,14 @@ target_sources(GraphContractor
   PUBLIC
   ${CMAKE_CURRENT_LIST_DIR}/include/span.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/Graph.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/UnidirectionGraph.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/GraphEssentials.hpp
 
 
   PRIVATE
   src/Graph.cpp
+  src/GraphEssentials.cpp
+  src/UnidirectionGraph.cpp
   )
 
 # make headers available

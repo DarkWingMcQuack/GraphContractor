@@ -1,88 +1,120 @@
 #include <Graph.hpp>
+#include <GraphEssentials.hpp>
+#include <UnidirectionGraph.hpp>
 #include <algorithm>
+#include <fmt/core.h>
+#include <fstream>
 #include <span.hpp>
 
 using datastructure::Edge;
-using datastructure::GraphPart;
+using datastructure::UnidirectionGraph;
 using datastructure::Graph;
 
-
-Edge::Edge(EdgeCost cost,
-           NodeId destination)
-    : cost_(cost),
-      destination_(destination) {}
-
-auto Edge::getCost() const
-    -> EdgeCost
-{
-    return cost_;
-}
-
-auto Edge::getDestination() const
-    -> NodeId
-{
-    return destination_;
-}
+Graph::Graph(UnidirectionGraph&& forward_graph,
+             UnidirectionGraph&& backward_graph,
+             std::vector<NodeLevel>&& levels)
+    : forward_graph_(std::move(forward_graph)),
+      backward_graph_(std::move(backward_graph)),
+      node_levels_(std::move(levels)) {}
 
 
-GraphPart::GraphPart(std::vector<std::pair<NodeId, Edge>> node_edges,
-                     const std::vector<NodeLevel>& node_levels)
-    : levels_(node_levels)
-{
-    if(node_edges.empty()) {
-        return;
-    }
-
-    std::sort(std::begin(node_edges),
-              std::end(node_edges),
-              [](auto&& lhs, auto&& rhs) {
-                  return lhs.first < rhs.first;
-              });
-
-    std::vector offsets(0, node_levels.size());
-    std::vector<Edge> edges;
-    edges.reserve(node_edges.size());
-
-    for(auto&& [node, edge] : node_edges) {
-        offsets[node]++;
-        edges.push_back(std::move(edge));
-    }
-
-    edges_ = std::move(edges);
-    offset_array_ = std::move(offsets);
-}
-
-auto GraphPart::getEdgesOf(const NodeId& node) const
+auto Graph::getForwardEdgesOf(const NodeId& node) const
     -> tcb::span<const Edge>
 {
-    auto number_of_edges = getNumberOfEdgesOf(node);
-    auto offset = offset_array_[node];
-    auto* start = &edges_[offset];
-
-    return {start, number_of_edges};
+    return forward_graph_.getEdgesOf(node);
 }
 
-auto GraphPart::getOffsetArray() const
-    -> const std::vector<NodeOffset>&
+auto Graph::getBackwardEdgesOf(const NodeId& node) const
+    -> tcb::span<const Edge>
 {
-    return offset_array_;
+    return backward_graph_.getEdgesOf(node);
 }
 
-auto GraphPart::getEdges() const
-    -> const std::vector<Edge>&
+auto Graph::getLevelOf(const NodeId& node) const
+    -> NodeLevel
 {
-    return edges_;
+    return node_levels_[node];
 }
 
 
-auto GraphPart::getNumberOfEdgesOf(const NodeId& node) const
-    -> std::int_fast32_t
+auto datastructure::readFromAllreadyContractedFile(std::string_view path)
+    -> std::optional<Graph>
 {
-    if(__builtin_expect((node == offset_array_.size() - 1), 0)) {
-        return edges_.size() - 1
-            - offset_array_[node];
+    // Open the File
+    std::ifstream in{path.data()};
+
+    // Check if object is valid
+    if(!in) {
+        fmt::print("unable to open file", path);
+        return std::nullopt;
     }
 
-    return offset_array_[node + 1]
-        - offset_array_[node];
+    std::string str;
+    //skip the comments
+    while(std::getline(in, str)) {
+        if(str[0] == '#') {
+            continue;
+        } else {
+            break;
+        }
+    }
+
+    std::uint_fast32_t number_of_nodes;
+    std::uint_fast32_t number_of_edges;
+
+    in >> number_of_nodes >> number_of_edges;
+
+    fmt::print("number of nodes {}\nnumber of edges {}\n",
+               number_of_nodes,
+               number_of_edges);
+
+    std::vector<NodeLevel> node_levels(number_of_nodes, 0);
+
+    NodeId node;
+    NodeId id2;
+    double latitude, longitude;
+    int elevation;
+    NodeLevel level;
+
+    for(int i{0}; i < number_of_nodes; i++) {
+        in >> node >> id2 >> latitude >> longitude >> elevation >> level;
+        node_levels[node] = level;
+    }
+
+    NodeId from;
+    NodeId to;
+    EdgeCost cost;
+    int speed;
+    int type;
+    NodeId child1;
+    NodeId child2;
+
+    std::vector<std::pair<NodeId, Edge>> forward_edges;
+    std::vector<std::pair<NodeId, Edge>> backward_edges;
+    forward_edges.reserve(number_of_edges);
+    backward_edges.reserve(number_of_edges);
+
+    for(int i{0}; i < number_of_edges; i++) {
+        in >> from >> to >> cost >> speed >> type >> child1 >> child2;
+        Edge forward_edge{to, cost};
+        forward_edges.emplace_back(from, forward_edge);
+
+        Edge backward_edge{from, cost};
+        backward_edges.emplace_back(to, backward_edge);
+    }
+
+    fmt::print("make forward graph\n");
+    UnidirectionGraph forward_graph{forward_edges};
+    fmt::print("make backward graph\n");
+    UnidirectionGraph backward_graph{backward_edges};
+
+    return Graph{std::move(forward_graph),
+                 std::move(backward_graph),
+                 std::move(node_levels)};
+}
+
+auto readFromNonContractedFile(std::string_view path)
+    -> std::optional<Graph>
+{
+    return std::nullopt;
 }
