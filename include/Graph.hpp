@@ -31,6 +31,9 @@ private:
 class GraphPart
 {
 public:
+    GraphPart(std::vector<std::pair<NodeId, Edge>> node_edges,
+              const std::vector<NodeLevel>& node_levels);
+
     auto getEdgesOf(const NodeId& node) const
         -> tcb::span<const Edge>;
 
@@ -50,6 +53,7 @@ private:
      */
     std::vector<NodeOffset> offset_array_;
     std::vector<Edge> edges_;
+    const std::vector<NodeLevel>& levels_;
 };
 
 class Graph

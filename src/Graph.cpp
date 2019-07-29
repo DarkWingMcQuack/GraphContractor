@@ -1,4 +1,5 @@
 #include <Graph.hpp>
+#include <algorithm>
 #include <span.hpp>
 
 using datastructure::Edge;
@@ -23,6 +24,33 @@ auto Edge::getDestination() const
     return destination_;
 }
 
+
+GraphPart::GraphPart(std::vector<std::pair<NodeId, Edge>> node_edges,
+                     const std::vector<NodeLevel>& node_levels)
+    : levels_(node_levels)
+{
+    if(node_edges.empty()) {
+        return;
+    }
+
+    std::sort(std::begin(node_edges),
+              std::end(node_edges),
+              [](auto&& lhs, auto&& rhs) {
+                  return lhs.first < rhs.first;
+              });
+
+    std::vector offsets(0, node_levels.size());
+    std::vector<Edge> edges;
+    edges.reserve(node_edges.size());
+
+    for(auto&& [node, edge] : node_edges) {
+        offsets[node]++;
+        edges.push_back(std::move(edge));
+    }
+
+    edges_ = std::move(edges);
+    offset_array_ = std::move(offsets);
+}
 
 auto GraphPart::getEdgesOf(const NodeId& node) const
     -> tcb::span<const Edge>
@@ -50,8 +78,8 @@ auto GraphPart::getEdges() const
 auto GraphPart::getNumberOfEdgesOf(const NodeId& node) const
     -> std::int_fast32_t
 {
-    if(node == offset_array_.size() - 1) {
-        return offset_array_.size()
+    if(__builtin_expect((node == offset_array_.size() - 1), 0)) {
+        return edges_.size() - 1
             - offset_array_[node];
     }
 
