@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/Graph.hpp
+span.hpp
+-
+vector
+-
+cstdint
+-
+
+../include/span.hpp
+array
+-
+cstddef
+-
+type_traits
+-
+cstdio
+-
+stdexcept
+-
+
+/home/lukas/Projects/GraphContractor/src/Graph.cpp
+Graph.hpp
+-
+span.hpp
+-
+

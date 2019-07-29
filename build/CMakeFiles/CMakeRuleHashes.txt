@@ -1,0 +1,19 @@
+# Hashes of file build rules.
+d34c0455b72bd0890267af6147f83c1a CMakeFiles/CLI11-project
+c3d08755f4d4761ca643b1baf12ad56d CMakeFiles/CLI11-project-complete
+d34c0455b72bd0890267af6147f83c1a CMakeFiles/fmt-project
+2f7dba5afa3309f991d0c8e336b2a289 CMakeFiles/fmt-project-complete
+7eedc29e174936228cfce6f5a1a65389 deps/CLI11/src/CLI11-project-stamp/CLI11-project-build
+c9c59db18305e54f3a5a6497deadfc8b deps/CLI11/src/CLI11-project-stamp/CLI11-project-configure
+b5bfcf970135b858fe3cf7dfed865a20 deps/CLI11/src/CLI11-project-stamp/CLI11-project-download
+48d6a33317d65938f5cea2b9b723d58b deps/CLI11/src/CLI11-project-stamp/CLI11-project-install
+dba459bb955c044981f3b63c1844d44f deps/CLI11/src/CLI11-project-stamp/CLI11-project-mkdir
+d8cd6596896d4a48889c2c6579b86287 deps/CLI11/src/CLI11-project-stamp/CLI11-project-patch
+7ff78470f688de1540699bd3a02c2bbf deps/CLI11/src/CLI11-project-stamp/CLI11-project-update
+261a4927787db0f8d32670a83761dfff deps/fmt/src/fmt-project-stamp/fmt-project-build
+03943e234477c21e9aa6b79e21b1a7c2 deps/fmt/src/fmt-project-stamp/fmt-project-configure
+598b02d422b3cf0f5500c89439101347 deps/fmt/src/fmt-project-stamp/fmt-project-download
+933e5068f40ec2bc0b0651081afb2339 deps/fmt/src/fmt-project-stamp/fmt-project-install
+85f0f6ee934b988665dd43081b0a4bf3 deps/fmt/src/fmt-project-stamp/fmt-project-mkdir
+7f578ce5bffddac44de7e6642548059c deps/fmt/src/fmt-project-stamp/fmt-project-patch
+19140178083a174f5b1bfd532577a1a5 deps/fmt/src/fmt-project-stamp/fmt-project-update

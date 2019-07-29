@@ -1,0 +1,5 @@
+/home/lukas/Projects/GraphContractor/build/CMakeFiles/rebuild_cache.dir
+/home/lukas/Projects/GraphContractor/build/CMakeFiles/GraphContractor.dir
+/home/lukas/Projects/GraphContractor/build/CMakeFiles/edit_cache.dir
+/home/lukas/Projects/GraphContractor/build/CMakeFiles/fmt-project.dir
+/home/lukas/Projects/GraphContractor/build/CMakeFiles/CLI11-project.dir

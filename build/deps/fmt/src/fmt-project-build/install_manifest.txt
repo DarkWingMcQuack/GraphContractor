@@ -1,0 +1,14 @@
+/home/lukas/Projects/GraphContractor/build/deps/fmt/lib64/cmake/fmt/fmt-config.cmake
+/home/lukas/Projects/GraphContractor/build/deps/fmt/lib64/cmake/fmt/fmt-config-version.cmake
+/home/lukas/Projects/GraphContractor/build/deps/fmt/lib64/cmake/fmt/fmt-targets.cmake
+/home/lukas/Projects/GraphContractor/build/deps/fmt/lib64/cmake/fmt/fmt-targets-release.cmake
+/home/lukas/Projects/GraphContractor/build/deps/fmt/lib64/libfmt.a
+/home/lukas/Projects/GraphContractor/build/deps/fmt/include/fmt/color.h
+/home/lukas/Projects/GraphContractor/build/deps/fmt/include/fmt/core.h
+/home/lukas/Projects/GraphContractor/build/deps/fmt/include/fmt/format.h
+/home/lukas/Projects/GraphContractor/build/deps/fmt/include/fmt/format-inl.h
+/home/lukas/Projects/GraphContractor/build/deps/fmt/include/fmt/ostream.h
+/home/lukas/Projects/GraphContractor/build/deps/fmt/include/fmt/printf.h
+/home/lukas/Projects/GraphContractor/build/deps/fmt/include/fmt/time.h
+/home/lukas/Projects/GraphContractor/build/deps/fmt/include/fmt/ranges.h
+/home/lukas/Projects/GraphContractor/build/deps/fmt/include/fmt/posix.h

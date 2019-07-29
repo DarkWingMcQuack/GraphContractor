@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/lukas/Projects/GraphContractor/build",
+  "command": "/usr/bin/c++   -I/home/lukas/Projects/GraphContractor/include -I/home/lukas/Projects/GraphContractor/fmt -I/home/lukas/Projects/GraphContractor/build/deps/CLI11/include -isystem /home/lukas/Projects/GraphContractor/build/deps/fmt/include  -O3 -DNDEBUG -Wall -flto -O3 -lboost_system -march=native -fstack-protector-strong   -std=c++17 -o CMakeFiles/GraphContractor.dir/src/main.cpp.o -c /home/lukas/Projects/GraphContractor/src/main.cpp",
+  "file": "/home/lukas/Projects/GraphContractor/src/main.cpp"
+},
+{
+  "directory": "/home/lukas/Projects/GraphContractor/build",
+  "command": "/usr/bin/c++   -I/home/lukas/Projects/GraphContractor/include -I/home/lukas/Projects/GraphContractor/fmt -I/home/lukas/Projects/GraphContractor/build/deps/CLI11/include -isystem /home/lukas/Projects/GraphContractor/build/deps/fmt/include  -O3 -DNDEBUG -Wall -flto -O3 -lboost_system -march=native -fstack-protector-strong   -std=c++17 -o CMakeFiles/GraphContractor.dir/src/Graph.cpp.o -c /home/lukas/Projects/GraphContractor/src/Graph.cpp",
+  "file": "/home/lukas/Projects/GraphContractor/src/Graph.cpp"
+}
+]

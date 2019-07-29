@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/lukas/Projects/GraphContractor/build/CMakeFiles/fmt-project"
+		},
+		{
+			"file" : "/home/lukas/Projects/GraphContractor/build/CMakeFiles/fmt-project.rule"
+		},
+		{
+			"file" : "/home/lukas/Projects/GraphContractor/build/CMakeFiles/fmt-project-complete.rule"
+		},
+		{
+			"file" : "/home/lukas/Projects/GraphContractor/build/deps/fmt/src/fmt-project-stamp/fmt-project-install.rule"
+		},
+		{
+			"file" : "/home/lukas/Projects/GraphContractor/build/deps/fmt/src/fmt-project-stamp/fmt-project-mkdir.rule"
+		},
+		{
+			"file" : "/home/lukas/Projects/GraphContractor/build/deps/fmt/src/fmt-project-stamp/fmt-project-download.rule"
+		},
+		{
+			"file" : "/home/lukas/Projects/GraphContractor/build/deps/fmt/src/fmt-project-stamp/fmt-project-update.rule"
+		},
+		{
+			"file" : "/home/lukas/Projects/GraphContractor/build/deps/fmt/src/fmt-project-stamp/fmt-project-patch.rule"
+		},
+		{
+			"file" : "/home/lukas/Projects/GraphContractor/build/deps/fmt/src/fmt-project-stamp/fmt-project-configure.rule"
+		},
+		{
+			"file" : "/home/lukas/Projects/GraphContractor/build/deps/fmt/src/fmt-project-stamp/fmt-project-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"fmt-project"
+		],
+		"name" : "fmt-project"
+	}
+}

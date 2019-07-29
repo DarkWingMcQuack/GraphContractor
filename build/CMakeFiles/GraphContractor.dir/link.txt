@@ -1,0 +1,1 @@
+ccache /usr/bin/c++  -O3 -DNDEBUG -Wall -flto -O3 -lboost_system -march=native -fstack-protector-strong   CMakeFiles/GraphContractor.dir/src/main.cpp.o CMakeFiles/GraphContractor.dir/src/Graph.cpp.o  -o GraphContractor deps/fmt//lib64/libfmt.a -lpthread 

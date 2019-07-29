@@ -1,0 +1,11 @@
+build/
+include/parser/generated/*
+.dir-locals.el
+external/
+.clang_complete
+.vscode/
+compile_commands.json
+.cquery
+.cquery_cached_index/
+test/include/util/parser/type/generated/*
+.ccls-cache/*
