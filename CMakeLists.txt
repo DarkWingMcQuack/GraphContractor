@@ -43,7 +43,7 @@ target_sources(GraphContractor
   ${CMAKE_CURRENT_LIST_DIR}/include/UnidirectionGraph.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/GraphEssentials.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/MultiTargetDijkstra.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/BidirectionalDijkstra.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/CHDijkstra.hpp
 
 
   PRIVATE
@@ -51,7 +51,7 @@ target_sources(GraphContractor
   src/GraphEssentials.cpp
   src/UnidirectionGraph.cpp
   src/MultiTargetDijkstra.cpp
-  src/BidirectionalDijkstra.cpp
+  src/CHDijkstra.cpp
   )
 
 # make headers available

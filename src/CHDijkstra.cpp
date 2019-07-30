@@ -1,4 +1,4 @@
-#include <BidirectionalDijkstra.hpp>
+#include <CHDijkstra.hpp>
 #include <Graph.hpp>
 #include <GraphEssentials.hpp>
 #include <fmt/core.h>
@@ -11,17 +11,17 @@ using datastructure::NodeId;
 using datastructure::Edge;
 using datastructure::EdgeCost;
 using datastructure::NodeLevel;
-using pathfinding::BidirectionalDijkstra;
+using pathfinding::CHDijkstra;
 
 
-BidirectionalDijkstra::BidirectionalDijkstra(const datastructure::Graph& graph)
+CHDijkstra::CHDijkstra(const datastructure::Graph& graph)
     : graph_(graph),
       forward_shortest_distances_(graph_.getNumberOfNodes(),
                                   std::numeric_limits<EdgeCost>::max()),
       backward_shortest_distances_(graph_.getNumberOfNodes(),
                                    std::numeric_limits<EdgeCost>::max()) {}
 
-auto BidirectionalDijkstra::shortestDistanceFromTo(const NodeId& source,
+auto CHDijkstra::shortestDistanceFromTo(const NodeId& source,
                                                    const NodeId& target)
     -> EdgeCost
 {
@@ -41,7 +41,7 @@ auto BidirectionalDijkstra::shortestDistanceFromTo(const NodeId& source,
     return findShortestPathInSettledNodes();
 }
 
-auto BidirectionalDijkstra::fillForwardInfo(const datastructure::NodeId& source)
+auto CHDijkstra::fillForwardInfo(const datastructure::NodeId& source)
     -> void
 {
     MinHeap queue(QueueElemCmp);
@@ -80,7 +80,7 @@ auto BidirectionalDijkstra::fillForwardInfo(const datastructure::NodeId& source)
               std::end(forward_settled_nodes_));
 }
 
-auto BidirectionalDijkstra::fillBackwardInfo(const datastructure::NodeId& target)
+auto CHDijkstra::fillBackwardInfo(const datastructure::NodeId& target)
     -> void
 {
     MinHeap queue(QueueElemCmp);
@@ -119,7 +119,7 @@ auto BidirectionalDijkstra::fillBackwardInfo(const datastructure::NodeId& target
               std::end(backward_settled_nodes_));
 }
 
-auto BidirectionalDijkstra::cleanup()
+auto CHDijkstra::cleanup()
     -> void
 {
     for(auto&& idx : backward_touched_nodes_) {
@@ -135,7 +135,7 @@ auto BidirectionalDijkstra::cleanup()
     forward_settled_nodes_.clear();
 }
 
-auto BidirectionalDijkstra::findShortestPathInSettledNodes()
+auto CHDijkstra::findShortestPathInSettledNodes()
     -> datastructure::EdgeCost
 {
     std::vector<NodeId> common_nodes;

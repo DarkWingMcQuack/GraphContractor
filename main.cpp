@@ -1,4 +1,4 @@
-#include <BidirectionalDijkstra.hpp>
+#include <CHDijkstra.hpp>
 #include <Graph.hpp>
 #include <MultiTargetDijkstra.hpp>
 #include <chrono>
@@ -34,7 +34,7 @@ auto main() -> int
     auto graph = datastructure::readFromNonContractedFile("/home/lukas/Downloads/stgtregbz.fmi").value();
     fmt::print("graph build in: {}s\n", t.elapsed());
 
-    pathfinding::BidirectionalDijkstra ch_pathfinder{ch_graph};
+    pathfinding::CHDijkstra ch_pathfinder{ch_graph};
     pathfinding::MultiTargetDijkstra pathfinder{ch_graph};
 
     t.reset();

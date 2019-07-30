@@ -6,7 +6,7 @@ namespace pathfinding {
 
 
 
-class BidirectionalDijkstra
+class CHDijkstra
 {
 public:
     struct QueueElem
@@ -25,7 +25,7 @@ public:
                                         decltype(QueueElemCmp)>;
 
 public:
-    BidirectionalDijkstra(const datastructure::Graph& graph);
+    CHDijkstra(const datastructure::Graph& graph);
 
     auto shortestDistanceFromTo(const datastructure::NodeId& source,
                                 const datastructure::NodeId& target)
