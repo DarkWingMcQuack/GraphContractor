@@ -30,19 +30,7 @@ auto Graph::getBackwardEdgesOf(const NodeId& node,
                                const NodeLevel& minimum_level) const
     -> tcb::span<const Edge>
 {
-    auto span = backward_graph_.getEdgesOf(node);
-    auto start =
-        std::find_if(std::cbegin(span),
-                     std::cend(span),
-                     [&](const auto& edge) {
-                         auto to = edge.getDestination();
-                         return node_levels_[to] >= minimum_level;
-                     });
-    if(start != std::cend(span)) {
-        return {start, std::cend(span) - start};
-    }
-
-    return {};
+    return backward_graph_.getEdgesOf(node);
 }
 
 auto Graph::getLevelOf(const NodeId& node) const
@@ -198,10 +186,10 @@ auto datastructure::readFromNonContractedFile(std::string_view path)
 
     for(int i{0}; i < number_of_edges; i++) {
         in >> from >> to >> cost >> speed >> type;
-        Edge forward_edge{to, cost};
+        Edge forward_edge{cost, to};
         forward_edges.emplace_back(from, forward_edge);
 
-        Edge backward_edge{from, cost};
+        Edge backward_edge{cost, from};
         backward_edges.emplace_back(to, backward_edge);
     }
 
@@ -235,4 +223,17 @@ auto Graph::getBackwardOffsetArray() const
     -> const std::vector<NodeOffset>&
 {
     return backward_graph_.getOffsetArray();
+}
+
+
+auto Graph::getNumberOfNodes() const
+    -> std::uint_fast32_t
+{
+    return node_levels_.size();
+}
+
+auto Graph::getNumberOfEdges() const
+    -> std::uint_fast32_t
+{
+    return forward_graph_.getEdges().size();
 }

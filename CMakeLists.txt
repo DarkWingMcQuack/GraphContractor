@@ -42,12 +42,14 @@ target_sources(GraphContractor
   ${CMAKE_CURRENT_LIST_DIR}/include/Graph.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/UnidirectionGraph.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/GraphEssentials.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/MultiTargetDijkstra.hpp
 
 
   PRIVATE
   src/Graph.cpp
   src/GraphEssentials.cpp
   src/UnidirectionGraph.cpp
+  src/MultiTargetDijkstra.cpp
   )
 
 # make headers available

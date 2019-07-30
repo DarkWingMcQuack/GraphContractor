@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <tuple>
 
 namespace datastructure {
 
@@ -9,7 +10,7 @@ using NodeOffset = std::int_fast32_t;
 using EdgeCost = std::int_fast32_t;
 using NodeLevel = std::int_fast32_t;
 
-class Edge
+struct Edge
 {
 public:
     Edge(EdgeCost cost,
