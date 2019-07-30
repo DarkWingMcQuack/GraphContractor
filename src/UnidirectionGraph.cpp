@@ -1,8 +1,6 @@
 #include <GraphEssentials.hpp>
 #include <UnidirectionGraph.hpp>
 #include <algorithm>
-#include <fmt/core.h>
-#include <fmt/ranges.h>
 #include <span.hpp>
 
 using datastructure::Edge;
@@ -33,14 +31,6 @@ UnidirectionGraph::UnidirectionGraph(std::vector<std::pair<NodeId, Edge>> node_e
     for(int i{1}; i < offsets.size(); i++) {
         offsets[i] = std::max(offsets[i], offsets[i - 1]);
     }
-
-    fmt::print("offset array {}\n", offsets);
-
-    fmt::print("edges ");
-    for(auto&& edge : edges) {
-        fmt::print(" ({},{}) ", edge.getCost(), edge.getDestination());
-    }
-    fmt::print("\n");
 
     edges_ = std::move(edges);
     offset_array_ = std::move(offsets);

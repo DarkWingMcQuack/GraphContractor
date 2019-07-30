@@ -5,7 +5,7 @@
 
 auto main() -> int
 {
-    auto graph = datastructure::readFromAllreadyContractedFile("/home/lukas/Downloads/toy.fmi").value();
+    auto graph = datastructure::readFromNonContractedFile("/home/lukas/Downloads/stgtregbz.fmi").value();
 
     for(auto edge : graph.getForwardEdgesOf(1)) {
         fmt::print("({},{}) ", edge.getCost(), edge.getDestination());

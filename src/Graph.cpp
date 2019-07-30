@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fmt/core.h>
 #include <fstream>
+#include <future>
 #include <span.hpp>
 
 using datastructure::Edge;
@@ -45,7 +46,7 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
 
     // Check if object is valid
     if(!in) {
-        fmt::print("unable to open file", path);
+        fmt::print("unable to open file {}\n", path);
         return std::nullopt;
     }
 
@@ -103,18 +104,102 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
         backward_edges.emplace_back(to, backward_edge);
     }
 
-    fmt::print("make forward graph\n");
-    UnidirectionGraph forward_graph{forward_edges};
-    fmt::print("make backward graph\n");
-    UnidirectionGraph backward_graph{backward_edges};
+    auto forward_future = std::async(
+        std::launch::async,
+        [](const auto& edges) {
+            return UnidirectionGraph{edges};
+        },
+        std::cref(forward_edges));
 
-    return Graph{std::move(forward_graph),
-                 std::move(backward_graph),
+    auto backward_future = std::async(
+        std::launch::async,
+        [](const auto& edges) {
+            return UnidirectionGraph{edges};
+        },
+        std::cref(backward_edges));
+
+    return Graph{forward_future.get(),
+                 backward_future.get(),
                  std::move(node_levels)};
 }
 
-auto readFromNonContractedFile(std::string_view path)
+auto datastructure::readFromNonContractedFile(std::string_view path)
     -> std::optional<Graph>
 {
-    return std::nullopt;
+    // Open the File
+    std::ifstream in{path.data()};
+
+    // Check if object is valid
+    if(!in) {
+        fmt::print("unable to open file {}\n", path);
+        return std::nullopt;
+    }
+
+    std::string str;
+    //skip the comments
+    while(std::getline(in, str)) {
+        if(str[0] == '#') {
+            continue;
+        } else {
+            break;
+        }
+    }
+
+    std::uint_fast32_t number_of_nodes;
+    std::uint_fast32_t number_of_edges;
+
+    in >> number_of_nodes >> number_of_edges;
+
+    fmt::print("number of nodes {}\nnumber of edges {}\n",
+               number_of_nodes,
+               number_of_edges);
+
+    std::vector<NodeLevel> node_levels(number_of_nodes, 0);
+
+    NodeId node;
+    NodeId id2;
+    double latitude, longitude;
+    int elevation;
+
+    for(int i{0}; i < number_of_nodes; i++) {
+        in >> node >> id2 >> latitude >> longitude >> elevation;
+    }
+
+    NodeId from;
+    NodeId to;
+    EdgeCost cost;
+    int speed;
+    int type;
+
+    std::vector<std::pair<NodeId, Edge>> forward_edges;
+    std::vector<std::pair<NodeId, Edge>> backward_edges;
+    forward_edges.reserve(number_of_edges);
+    backward_edges.reserve(number_of_edges);
+
+    for(int i{0}; i < number_of_edges; i++) {
+        in >> from >> to >> cost >> speed >> type;
+        Edge forward_edge{to, cost};
+        forward_edges.emplace_back(from, forward_edge);
+
+        Edge backward_edge{from, cost};
+        backward_edges.emplace_back(to, backward_edge);
+    }
+
+    auto forward_future = std::async(
+        std::launch::async,
+        [](const auto& edges) {
+            return UnidirectionGraph{edges};
+        },
+        std::cref(forward_edges));
+
+    auto backward_future = std::async(
+        std::launch::async,
+        [](const auto& edges) {
+            return UnidirectionGraph{edges};
+        },
+        std::cref(backward_edges));
+
+    return Graph{forward_future.get(),
+                 backward_future.get(),
+                 std::move(node_levels)};
 }
