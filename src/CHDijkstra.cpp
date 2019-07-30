@@ -1,4 +1,5 @@
 #include <CHDijkstra.hpp>
+#include <DijkstraQueue.hpp>
 #include <Graph.hpp>
 #include <GraphEssentials.hpp>
 #include <fmt/core.h>
@@ -27,13 +28,6 @@ auto CHDijkstra::shortestDistanceFromTo(const NodeId& source,
 {
     //cleanup touched nodes
     cleanup();
-    // auto fut1 = std::async(fillForwardInfo(source)
-    // auto fut1 = std::async(std::launch::async,
-    //                        [&]() { fillForwardInfo(source); });
-    // auto fut2 = std::async(std::launch::async,
-    //                        [&]() { fillBackwardInfo(target); });
-    // fut1.get();
-    // fut2.get();
 
     fillForwardInfo(source);
     fillBackwardInfo(target);
@@ -119,24 +113,6 @@ auto CHDijkstra::fillBackwardInfo(const datastructure::NodeId& target)
               std::end(backward_settled_nodes_));
 }
 
-auto CHDijkstra::cleanup()
-    -> void
-{
-    for(auto&& idx : backward_touched_nodes_) {
-        backward_shortest_distances_[idx] =
-            std::numeric_limits<EdgeCost>::max();
-    }
-    backward_settled_nodes_.clear();
-    backward_touched_nodes_.clear();
-
-    for(auto&& idx : forward_touched_nodes_) {
-        forward_shortest_distances_[idx] =
-            std::numeric_limits<EdgeCost>::max();
-    }
-    forward_settled_nodes_.clear();
-    forward_touched_nodes_.clear();
-}
-
 auto CHDijkstra::findShortestPathInSettledNodes()
     -> datastructure::EdgeCost
 {
@@ -156,4 +132,22 @@ auto CHDijkstra::findShortestPathInSettledNodes()
             auto down_cost = backward_shortest_distances_[current_common_node];
             return std::min(up_cost + down_cost, current);
         });
+}
+
+auto CHDijkstra::cleanup()
+    -> void
+{
+    for(auto&& idx : backward_touched_nodes_) {
+        backward_shortest_distances_[idx] =
+            std::numeric_limits<EdgeCost>::max();
+    }
+    backward_settled_nodes_.clear();
+    backward_touched_nodes_.clear();
+
+    for(auto&& idx : forward_touched_nodes_) {
+        forward_shortest_distances_[idx] =
+            std::numeric_limits<EdgeCost>::max();
+    }
+    forward_settled_nodes_.clear();
+    forward_touched_nodes_.clear();
 }

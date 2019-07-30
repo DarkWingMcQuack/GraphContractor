@@ -9,35 +9,19 @@ namespace pathfinding {
 class CHDijkstra
 {
 public:
-    struct QueueElem
-    {
-        datastructure::EdgeCost cost_;
-        datastructure::NodeId current_position_;
-    };
-
-    constexpr static inline auto QueueElemCmp =
-        [](auto&& lhs, auto&& rhs) {
-            return lhs.cost_ > rhs.cost_;
-        };
-
-    using MinHeap = std::priority_queue<QueueElem,
-                                        std::vector<QueueElem>,
-                                        decltype(QueueElemCmp)>;
-
-public:
     CHDijkstra(const datastructure::Graph& graph);
 
     auto shortestDistanceFromTo(const datastructure::NodeId& source,
                                 const datastructure::NodeId& target)
         -> datastructure::EdgeCost;
 
-    auto cleanup()
-        -> void;
 
 private:
     auto fillForwardInfo(const datastructure::NodeId& source)
         -> void;
     auto fillBackwardInfo(const datastructure::NodeId& target)
+        -> void;
+    auto cleanup()
         -> void;
 
     auto findShortestPathInSettledNodes()

@@ -1,3 +1,4 @@
+#include <DijkstraQueue.hpp>
 #include <Graph.hpp>
 #include <GraphEssentials.hpp>
 #include <MultiTargetDijkstra.hpp>

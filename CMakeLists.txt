@@ -44,6 +44,7 @@ target_sources(GraphContractor
   ${CMAKE_CURRENT_LIST_DIR}/include/GraphEssentials.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/MultiTargetDijkstra.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/CHDijkstra.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/DijkstraQueue.hpp
 
 
   PRIVATE
