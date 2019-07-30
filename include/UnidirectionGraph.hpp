@@ -24,6 +24,13 @@ public:
     auto getEdges() const
         -> const std::vector<Edge>&;
 
+    auto sortEdgesByNodeLevel(const std::vector<NodeLevel>& node_levels)
+        -> void;
+
+private:
+    auto getEdgesOf(const NodeId& node)
+        -> tcb::span<Edge>;
+
 private:
     /*
      * offset_array points into edge_ids
@@ -32,12 +39,5 @@ private:
     std::vector<NodeOffset> offset_array_;
     std::vector<Edge> edges_;
 };
-
-auto createBackwardGraphpart(const UnidirectionGraph& forward)
-    -> UnidirectionGraph;
-
-
-auto createBackwardGraphpart(const UnidirectionGraph& forward)
-    -> UnidirectionGraph;
 
 } // namespace datastructure

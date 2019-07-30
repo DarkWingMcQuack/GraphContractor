@@ -19,16 +19,30 @@ Graph::Graph(UnidirectionGraph&& forward_graph,
       node_levels_(std::move(levels)) {}
 
 
-auto Graph::getForwardEdgesOf(const NodeId& node) const
+auto Graph::getForwardEdgesOf(const NodeId& node,
+                              const NodeLevel& minimum_level) const
     -> tcb::span<const Edge>
 {
     return forward_graph_.getEdgesOf(node);
 }
 
-auto Graph::getBackwardEdgesOf(const NodeId& node) const
+auto Graph::getBackwardEdgesOf(const NodeId& node,
+                               const NodeLevel& minimum_level) const
     -> tcb::span<const Edge>
 {
-    return backward_graph_.getEdgesOf(node);
+    auto span = backward_graph_.getEdgesOf(node);
+    auto start =
+        std::find_if(std::cbegin(span),
+                     std::cend(span),
+                     [&](const auto& edge) {
+                         auto to = edge.getDestination();
+                         return node_levels_[to] >= minimum_level;
+                     });
+    if(start != std::cend(span)) {
+        return {start, std::cend(span) - start};
+    }
+
+    return {};
 }
 
 auto Graph::getLevelOf(const NodeId& node) const
@@ -97,26 +111,32 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
 
     for(int i{0}; i < number_of_edges; i++) {
         in >> from >> to >> cost >> speed >> type >> child1 >> child2;
-        Edge forward_edge{to, cost};
+        Edge forward_edge{cost, to};
         forward_edges.emplace_back(from, forward_edge);
 
-        Edge backward_edge{from, cost};
+        Edge backward_edge{cost, from};
         backward_edges.emplace_back(to, backward_edge);
     }
 
     auto forward_future = std::async(
         std::launch::async,
-        [](const auto& edges) {
-            return UnidirectionGraph{edges};
+        [](const auto& edges, const auto& levels) {
+            UnidirectionGraph forward_graph{edges};
+            forward_graph.sortEdgesByNodeLevel(levels);
+            return forward_graph;
         },
-        std::cref(forward_edges));
+        std::cref(forward_edges),
+        std::cref(node_levels));
 
     auto backward_future = std::async(
         std::launch::async,
-        [](const auto& edges) {
-            return UnidirectionGraph{edges};
+        [](const auto& edges, const auto& levels) {
+            UnidirectionGraph backward_graph{edges};
+            backward_graph.sortEdgesByNodeLevel(levels);
+            return backward_graph;
         },
-        std::cref(backward_edges));
+        std::cref(backward_edges),
+        std::cref(node_levels));
 
     return Graph{forward_future.get(),
                  backward_future.get(),
@@ -202,4 +222,17 @@ auto datastructure::readFromNonContractedFile(std::string_view path)
     return Graph{forward_future.get(),
                  backward_future.get(),
                  std::move(node_levels)};
+}
+
+
+auto Graph::getForwardOffsetArray() const
+    -> const std::vector<NodeOffset>&
+{
+    return forward_graph_.getOffsetArray();
+}
+
+auto Graph::getBackwardOffsetArray() const
+    -> const std::vector<NodeOffset>&
+{
+    return backward_graph_.getOffsetArray();
 }

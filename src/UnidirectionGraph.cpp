@@ -54,6 +54,24 @@ auto UnidirectionGraph::getEdgesOf(const NodeId& node) const
     return {start, number_of_edges};
 }
 
+auto UnidirectionGraph::getEdgesOf(const NodeId& node)
+    -> tcb::span<Edge>
+{
+    auto number_of_edges = getNumberOfEdgesOf(node);
+
+    auto offset = [&]() {
+        if(__builtin_expect((node == 0), 0)) {
+            return 0l;
+        }
+
+        return offset_array_[node - 1];
+    }();
+
+    auto* start = &edges_[offset];
+
+    return {start, number_of_edges};
+}
+
 auto UnidirectionGraph::getOffsetArray() const
     -> const std::vector<NodeOffset>&
 {
@@ -76,30 +94,18 @@ auto UnidirectionGraph::getNumberOfEdgesOf(const NodeId& node) const
     return offset_array_[node]
         - offset_array_[node - 1];
 }
-
-
-auto datastructure::createBackwardGraphpart(const UnidirectionGraph& forward)
-    -> UnidirectionGraph
+auto UnidirectionGraph::sortEdgesByNodeLevel(const std::vector<NodeLevel>& node_levels)
+    -> void
 {
-    std::vector<std::pair<NodeId, Edge>> backward_edges;
-    backward_edges.reserve(forward.getEdges().size());
-
-    auto number_of_nodes = forward.getOffsetArray().size();
-
-    for(int i{0}; i < number_of_nodes; i++) {
-        auto span = forward.getEdgesOf(i);
-        for(auto edge : span) {
-            auto from = i;
-            auto to = edge.getDestination();
-            auto cost = edge.getCost();
-
-            Edge backward_edge{cost,
-                               static_cast<NodeId>(from)};
-            backward_edges.push_back({to, backward_edge});
-        }
+    for(NodeId node{0}; node < node_levels.size(); node++) {
+        auto edges = getEdgesOf(node);
+        std::sort(
+            std::begin(edges),
+            std::end(edges),
+            [&](const auto& lhs, const auto& rhs) {
+                auto lhs_dest = lhs.getDestination();
+                auto rhs_dest = rhs.getDestination();
+                return node_levels[lhs_dest] < node_levels[rhs_dest];
+            });
     }
-
-    UnidirectionGraph backward_graph{backward_edges};
-
-    return backward_graph;
 }
