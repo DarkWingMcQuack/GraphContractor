@@ -1,3 +1,4 @@
+#include <BidirectionalDijkstra.hpp>
 #include <Graph.hpp>
 #include <MultiTargetDijkstra.hpp>
 #include <chrono>
@@ -27,31 +28,30 @@ private:
 auto main() -> int
 {
     Timer t;
-    auto graph = datastructure::readFromNonContractedFile("/home/lukas/Downloads/germany.fmi").value();
+    fmt::print("read CH Graph...\n");
+    auto ch_graph = datastructure::readFromAllreadyContractedFile("/home/lukas/Downloads/stgtregbz_ch.fmi").value();
+    fmt::print("read non-CH Graph...\n");
+    auto graph = datastructure::readFromNonContractedFile("/home/lukas/Downloads/stgtregbz.fmi").value();
     fmt::print("graph build in: {}s\n", t.elapsed());
 
-    pathfinding::MultiTargetDijkstra pathfinder{graph};
+    pathfinding::BidirectionalDijkstra ch_pathfinder{ch_graph};
+    pathfinding::MultiTargetDijkstra pathfinder{ch_graph};
 
     t.reset();
-    auto distance = pathfinder.shortestDistanceFromTo(8371825,
-                                                      {16743651,
-                                                       16743652,
-                                                       16743653,
-                                                       16743654,
-                                                       16743655,
-                                                       16743656,
-                                                       16743657,
-                                                       16743658,
-                                                       16743659,
-                                                       16743660});
+    auto ch_distance = ch_pathfinder.shortestDistanceFromTo(12221,
+                                                            218323);
 
 
 
+    auto ch_time = t.elapsed();
+    fmt::print("calculated ch_distance in: {}s\n", ch_time);
+    t.reset();
 
-    fmt::print("calculated distance in: {}s\n", t.elapsed());
-    std::vector should{648681l, 649433l, 666379l, 648777l, 649372l, 649304l, 648885l, 649227l, 649163l, 648996l};
 
-    fmt::print("distances correct? {}\n", (should == distance));
-    fmt::print("real:\t{}\n", distance);
-    fmt::print("should:\t{}\n", should);
+    auto distance = pathfinder.shortestDistanceFromTo(12221, {218323});
+    auto normal_time = t.elapsed();
+    fmt::print("calculated distance in: {}s\n", normal_time);
+    fmt::print("ch_distance:\t{}\n", ch_distance);
+    fmt::print("distance:\t{}\n", distance[0]);
+    fmt::print("speedup:\t{}\n", normal_time / ch_time);
 }

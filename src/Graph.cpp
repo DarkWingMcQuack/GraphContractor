@@ -23,14 +23,33 @@ auto Graph::getForwardEdgesOf(const NodeId& node,
                               const NodeLevel& minimum_level) const
     -> tcb::span<const Edge>
 {
-    return forward_graph_.getEdgesOf(node);
+    auto edges = forward_graph_.getEdgesOf(node);
+    auto end = std::cend(edges);
+    auto start = std::find_if(std::cbegin(edges),
+                              end,
+                              [&](auto&& edge) {
+                                  auto dest = edge.getDestination();
+                                  auto dest_level = node_levels_[dest];
+                                  return dest_level >= minimum_level;
+                              });
+
+    return {start, end};
 }
 
 auto Graph::getBackwardEdgesOf(const NodeId& node,
                                const NodeLevel& minimum_level) const
     -> tcb::span<const Edge>
 {
-    return backward_graph_.getEdgesOf(node);
+    auto edges = backward_graph_.getEdgesOf(node);
+    auto end = std::cend(edges);
+    auto start = std::find_if(std::cbegin(edges),
+                              end,
+                              [&](auto&& edge) {
+                                  auto dest = edge.getDestination();
+                                  auto dest_level = node_levels_[dest];
+                                  return dest_level >= minimum_level;
+                              });
+    return {start, end};
 }
 
 auto Graph::getLevelOf(const NodeId& node) const
