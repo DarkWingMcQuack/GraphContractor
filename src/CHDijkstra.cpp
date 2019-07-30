@@ -22,7 +22,7 @@ CHDijkstra::CHDijkstra(const datastructure::Graph& graph)
                                    std::numeric_limits<EdgeCost>::max()) {}
 
 auto CHDijkstra::shortestDistanceFromTo(const NodeId& source,
-                                                   const NodeId& target)
+                                        const NodeId& target)
     -> EdgeCost
 {
     //cleanup touched nodes
@@ -127,12 +127,14 @@ auto CHDijkstra::cleanup()
             std::numeric_limits<EdgeCost>::max();
     }
     backward_settled_nodes_.clear();
+    backward_touched_nodes_.clear();
 
     for(auto&& idx : forward_touched_nodes_) {
         forward_shortest_distances_[idx] =
             std::numeric_limits<EdgeCost>::max();
     }
     forward_settled_nodes_.clear();
+    forward_touched_nodes_.clear();
 }
 
 auto CHDijkstra::findShortestPathInSettledNodes()

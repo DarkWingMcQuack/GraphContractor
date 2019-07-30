@@ -81,4 +81,6 @@ auto MultiTargetDijkstra::cleanup()
     for(auto&& idx : touched_nodes_) {
         shortest_distances_[idx] = std::numeric_limits<EdgeCost>::max();
     }
+    touched_nodes_.clear();
+    settled_nodes_.clear();
 }
