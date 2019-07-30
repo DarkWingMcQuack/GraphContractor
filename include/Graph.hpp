@@ -16,12 +16,10 @@ public:
           UnidirectionGraph&& backward_graph,
           std::vector<NodeLevel>&& levels);
 
-    auto getForwardEdgesOf(const NodeId& node,
-                           const NodeLevel& level = 0) const
+    auto getForwardEdgesOf(const NodeId& node) const
         -> tcb::span<const Edge>;
 
-    auto getBackwardEdgesOf(const NodeId& node,
-                            const NodeLevel& level = 0) const
+    auto getBackwardEdgesOf(const NodeId& node) const
         -> tcb::span<const Edge>;
 
     auto getForwardOffsetArray() const

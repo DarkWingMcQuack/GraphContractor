@@ -12,6 +12,9 @@ class UnidirectionGraph
 public:
     UnidirectionGraph(std::vector<std::pair<NodeId, Edge>> node_edges);
 
+    UnidirectionGraph(std::vector<std::pair<NodeId, Edge>> node_edges,
+                      const std::vector<NodeLevel>& node_levels);
+
     auto getEdgesOf(const NodeId& node) const
         -> tcb::span<const Edge>;
 
@@ -23,9 +26,6 @@ public:
 
     auto getEdges() const
         -> const std::vector<Edge>&;
-
-    auto sortEdgesByNodeLevel(const std::vector<NodeLevel>& node_levels)
-        -> void;
 
 private:
     auto getEdgesOf(const NodeId& node)

@@ -2,9 +2,7 @@
 #include <DijkstraQueue.hpp>
 #include <Graph.hpp>
 #include <GraphEssentials.hpp>
-#include <fmt/core.h>
-#include <fmt/ranges.h>
-#include <future>
+#include <algorithm>
 #include <numeric>
 
 using datastructure::Graph;
@@ -29,6 +27,7 @@ auto CHDijkstra::shortestDistanceFromTo(const NodeId& source,
     //cleanup touched nodes
     cleanup();
 
+    //fill settled_nodes and shortest_distances
     fillForwardInfo(source);
     fillBackwardInfo(target);
 
@@ -49,12 +48,9 @@ auto CHDijkstra::fillForwardInfo(const datastructure::NodeId& source)
               current_node] = queue.top();
         queue.pop();
 
-        auto node_level = graph_.getLevelOf(current_node);
-
         forward_settled_nodes_.push_back(current_node);
 
-        auto edges = graph_.getForwardEdgesOf(current_node,
-                                              node_level + 1);
+        auto edges = graph_.getForwardEdgesOf(current_node);
 
         for(auto edge : edges) {
             auto weight = edge.getCost();
@@ -88,12 +84,9 @@ auto CHDijkstra::fillBackwardInfo(const datastructure::NodeId& target)
               current_node] = queue.top();
         queue.pop();
 
-        auto node_level = graph_.getLevelOf(current_node);
-
         backward_settled_nodes_.push_back(current_node);
 
-        auto edges = graph_.getBackwardEdgesOf(current_node,
-                                               node_level + 1);
+        auto edges = graph_.getBackwardEdgesOf(current_node);
 
         for(auto edge : edges) {
             auto weight = edge.getCost();
@@ -117,6 +110,7 @@ auto CHDijkstra::findShortestPathInSettledNodes()
     -> datastructure::EdgeCost
 {
     std::vector<NodeId> common_nodes;
+    common_nodes.reserve(forward_settled_nodes_.size());
     std::set_intersection(std::cbegin(forward_settled_nodes_),
                           std::cend(forward_settled_nodes_),
                           std::cbegin(backward_settled_nodes_),

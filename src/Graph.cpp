@@ -19,37 +19,16 @@ Graph::Graph(UnidirectionGraph&& forward_graph,
       node_levels_(std::move(levels)) {}
 
 
-auto Graph::getForwardEdgesOf(const NodeId& node,
-                              const NodeLevel& minimum_level) const
+auto Graph::getForwardEdgesOf(const NodeId& node) const
     -> tcb::span<const Edge>
 {
-    auto edges = forward_graph_.getEdgesOf(node);
-    auto end = std::cend(edges);
-    auto start = std::find_if(std::cbegin(edges),
-                              end,
-                              [&](auto&& edge) {
-                                  auto dest = edge.getDestination();
-                                  auto dest_level = node_levels_[dest];
-                                  return dest_level >= minimum_level;
-                              });
-
-    return {start, end};
+    return forward_graph_.getEdgesOf(node);
 }
 
-auto Graph::getBackwardEdgesOf(const NodeId& node,
-                               const NodeLevel& minimum_level) const
+auto Graph::getBackwardEdgesOf(const NodeId& node) const
     -> tcb::span<const Edge>
 {
-    auto edges = backward_graph_.getEdgesOf(node);
-    auto end = std::cend(edges);
-    auto start = std::find_if(std::cbegin(edges),
-                              end,
-                              [&](auto&& edge) {
-                                  auto dest = edge.getDestination();
-                                  auto dest_level = node_levels_[dest];
-                                  return dest_level >= minimum_level;
-                              });
-    return {start, end};
+    return backward_graph_.getEdgesOf(node);
 }
 
 auto Graph::getLevelOf(const NodeId& node) const
@@ -118,6 +97,7 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
 
     for(int i{0}; i < number_of_edges; i++) {
         in >> from >> to >> cost >> speed >> type >> child1 >> child2;
+
         Edge forward_edge{cost, to};
         forward_edges.emplace_back(from, forward_edge);
 
@@ -128,8 +108,7 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     auto forward_future = std::async(
         std::launch::async,
         [](const auto& edges, const auto& levels) {
-            UnidirectionGraph forward_graph{edges};
-            forward_graph.sortEdgesByNodeLevel(levels);
+            UnidirectionGraph forward_graph{edges, levels};
             return forward_graph;
         },
         std::cref(forward_edges),
@@ -138,8 +117,7 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     auto backward_future = std::async(
         std::launch::async,
         [](const auto& edges, const auto& levels) {
-            UnidirectionGraph backward_graph{edges};
-            backward_graph.sortEdgesByNodeLevel(levels);
+            UnidirectionGraph backward_graph{edges, levels};
             return backward_graph;
         },
         std::cref(backward_edges),

@@ -1,6 +1,7 @@
 #include <GraphEssentials.hpp>
 #include <UnidirectionGraph.hpp>
 #include <algorithm>
+#include <fmt/core.h>
 #include <span.hpp>
 
 using datastructure::Edge;
@@ -14,7 +15,7 @@ UnidirectionGraph::UnidirectionGraph(std::vector<std::pair<NodeId, Edge>> node_e
 
     std::sort(std::begin(node_edges),
               std::end(node_edges),
-              [](auto&& lhs, auto&& rhs) {
+              [](const auto& lhs, const auto& rhs) {
                   return lhs.first < rhs.first;
               });
 
@@ -29,11 +30,28 @@ UnidirectionGraph::UnidirectionGraph(std::vector<std::pair<NodeId, Edge>> node_e
     }
 
     for(int i{1}; i < offsets.size(); i++) {
-        offsets[i] = std::max(offsets[i], offsets[i - 1]);
+        offsets[i] = std::max(offsets[i],
+                              offsets[i - 1]);
     }
 
     edges_ = std::move(edges);
     offset_array_ = std::move(offsets);
+}
+
+UnidirectionGraph::UnidirectionGraph(std::vector<std::pair<NodeId, Edge>> node_edges,
+                                     const std::vector<NodeLevel>& node_levels)
+{
+    node_edges.erase(
+        std::remove_if(std::begin(node_edges),
+                       std::end(node_edges),
+                       [&](const auto& pair) {
+                           const auto& [from, edge] = pair;
+                           auto to = edge.getDestination();
+                           return node_levels[from] >= node_levels[to];
+                       }),
+        std::end(node_edges));
+
+    *this = UnidirectionGraph{std::move(node_edges)};
 }
 
 auto UnidirectionGraph::getEdgesOf(const NodeId& node) const
@@ -41,13 +59,15 @@ auto UnidirectionGraph::getEdgesOf(const NodeId& node) const
 {
     auto number_of_edges = getNumberOfEdgesOf(node);
 
-    auto offset = [&]() {
+    auto offset = [&]() constexpr
+    {
         if(__builtin_expect((node == 0), 0)) {
             return 0l;
         }
 
         return offset_array_[node - 1];
-    }();
+    }
+    ();
 
     auto* start = &edges_[offset];
 
@@ -59,13 +79,15 @@ auto UnidirectionGraph::getEdgesOf(const NodeId& node)
 {
     auto number_of_edges = getNumberOfEdgesOf(node);
 
-    auto offset = [&]() {
+    auto offset = [&]() constexpr
+    {
         if(__builtin_expect((node == 0), 0)) {
             return 0l;
         }
 
         return offset_array_[node - 1];
-    }();
+    }
+    ();
 
     auto* start = &edges_[offset];
 
@@ -93,19 +115,4 @@ auto UnidirectionGraph::getNumberOfEdgesOf(const NodeId& node) const
 
     return offset_array_[node]
         - offset_array_[node - 1];
-}
-auto UnidirectionGraph::sortEdgesByNodeLevel(const std::vector<NodeLevel>& node_levels)
-    -> void
-{
-    for(NodeId node{0}; node < node_levels.size(); node++) {
-        auto edges = getEdgesOf(node);
-        std::sort(
-            std::begin(edges),
-            std::end(edges),
-            [&](const auto& lhs, const auto& rhs) {
-                auto lhs_dest = lhs.getDestination();
-                auto rhs_dest = rhs.getDestination();
-                return node_levels[lhs_dest] < node_levels[rhs_dest];
-            });
-    }
 }

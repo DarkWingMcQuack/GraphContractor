@@ -35,11 +35,11 @@ auto main() -> int
     fmt::print("graph build in: {}s\n", t.elapsed());
 
     pathfinding::CHDijkstra ch_pathfinder{ch_graph};
-    pathfinding::MultiTargetDijkstra pathfinder{ch_graph};
+    pathfinding::MultiTargetDijkstra pathfinder{graph};
 
     t.reset();
-    auto ch_distance = ch_pathfinder.shortestDistanceFromTo(12221,
-                                                            218323);
+    auto ch_distance = ch_pathfinder.shortestDistanceFromTo(122210,
+                                                            218330);
 
 
 
@@ -48,7 +48,7 @@ auto main() -> int
     t.reset();
 
 
-    auto distance = pathfinder.shortestDistanceFromTo(12221, {218323});
+    auto distance = pathfinder.shortestDistanceFromTo(122210, {218330});
     auto normal_time = t.elapsed();
     fmt::print("calculated distance in: {}s\n", normal_time);
     fmt::print("ch_distance:\t{}\n", ch_distance);
