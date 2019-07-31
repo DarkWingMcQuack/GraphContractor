@@ -53,7 +53,7 @@ auto main() -> int
 
         t.reset();
         // auto ch_distance = ch_pathfinder.shortestDistanceFromTo(from,
-                                                                // to);
+        // to);
 
 
 
@@ -64,9 +64,11 @@ auto main() -> int
 
         auto distance = pathfinder.shortestDistanceFromTo(from, to);
         auto normal_time = t.elapsed();
-        fmt::print("calculated distance in: {}s\n", normal_time);
+        auto distances = pathfinder.shortestDistanceFromTo(from, {to, ++to, ++to, ++to, ++to, ++to, ++to, ++to, ++to});
+        fmt::print("calculated distances in: {}s\n", normal_time);
         // fmt::print("ch_distance:\t{}\n", ch_distance);
         fmt::print("distance:\t{}\n", distance);
+        fmt::print("distances:\t{}\n", distances);
         // fmt::print("speedup:\t{}\n", normal_time / ch_time);
     }
 }

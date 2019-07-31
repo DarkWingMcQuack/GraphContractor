@@ -27,7 +27,7 @@ private:
     MinHeap queue_;
     std::optional<datastructure::NodeId> last_source_;
     std::vector<datastructure::NodeId> touched_nodes_;
-    std::vector<datastructure::NodeId> settled_nodes_;
+    std::vector<bool> settled_;
     std::vector<datastructure::EdgeCost> shortest_distances_;
 };
 

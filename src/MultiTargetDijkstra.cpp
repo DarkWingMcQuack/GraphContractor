@@ -15,6 +15,7 @@ using pathfinding::MultiTargetDijkstra;
 
 MultiTargetDijkstra::MultiTargetDijkstra(const datastructure::Graph& graph)
     : graph_(graph),
+      settled_(graph_.getNumberOfNodes(), false),
       shortest_distances_(graph_.getNumberOfNodes(),
                           std::numeric_limits<EdgeCost>::max()) {}
 
@@ -22,58 +23,73 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const NodeId& source,
                                                  const std::vector<NodeId>& targets)
     -> std::vector<EdgeCost>
 {
-    //cleanup touched nodes
-    cleanup();
+    if(source != last_source_) {
+        last_source_ = source;
+        cleanup();
+        MinHeap new_queue;
+        queue_ = std::move(new_queue);
+        queue_.push({0, source});
+        shortest_distances_[source] = 0;
+    }
 
-    MinHeap queue;
-    queue.push({0, source});
+    //count how many targets are already settled
+    auto settled_target_count =
+        std::count_if(std::cbegin(targets),
+                      std::cend(targets),
+                      [&](auto&& target) {
+                          return settled_[target];
+                      });
 
-    std::vector costs(targets.size(),
-                      std::numeric_limits<EdgeCost>::max());
 
-    auto keep_inserting = true;
+    //while queue not empty and not all targets sattled
+    while(!queue_.empty()
+          && settled_target_count < targets.size()) {
 
-    shortest_distances_[source] = 0;
+        auto [cost_to_current, current_node] = queue_.top();
 
-    while(!queue.empty()) {
-        auto [cost_to_current, current_node] = queue.top();
-        queue.pop();
+        //check if current node is a target and if it was not
+        //settled until now
+        if(std::find(std::cbegin(targets),
+                     std::cend(targets),
+                     current_node)
+               != std::cend(targets)
+           && !settled_[current_node]
+           && ++settled_target_count == targets.size()) {
+            break;
+        }
 
-        settled_nodes_.push_back(current_node);
+        queue_.pop();
+
+        settled_[current_node] = true;
 
         auto edges = graph_.getForwardEdgesOf(current_node);
 
+        //visit all the neigbors
         for(auto edge : edges) {
+            //calculate new new possible shortest distance
             auto weight = edge.getCost();
             auto dest = edge.getDestination();
             auto new_cost = weight + cost_to_current;
 
 
+            //update shortest distances
             if(new_cost < shortest_distances_[dest]) {
-                if(keep_inserting) {
-                    queue.push({new_cost, dest});
-                }
+                queue_.push({new_cost, dest});
                 shortest_distances_[dest] = new_cost;
-            }
-
-            for(int i{0}; i < targets.size(); i++) {
-                const auto target = targets[i];
-                costs[i] = std::min(shortest_distances_[target],
-                                    costs[i]);
-            }
-
-            keep_inserting =
-                std::any_of(
-                    std::cbegin(costs),
-                    std::cend(costs),
-                    [](auto&& c) {
-                        return c == std::numeric_limits<EdgeCost>::max();
-                    });
-            if(!keep_inserting) {
-                return costs;
             }
         }
     }
+
+    //get the shortest path distances of all the targets
+    std::vector<EdgeCost> costs;
+    costs.reserve(targets.size());
+
+    std::transform(std::cbegin(targets),
+                   std::cend(targets),
+                   std::back_inserter(costs),
+                   [&](auto&& target) {
+                       return shortest_distances_[target];
+                   });
 
     return costs;
 }
@@ -90,15 +106,9 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
         queue_ = std::move(new_queue);
         queue_.push({0, source});
         shortest_distances_[source] = 0;
-    } else if(std::find(std::cbegin(settled_nodes_),
-                        std::cend(settled_nodes_),
-                        target)
-              != std::cend(settled_nodes_)) {
-        fmt::print("already calculated\n");
+    } else if(settled_[target]) {
         return shortest_distances_[target];
     }
-
-
 
     while(!queue_.empty()) {
 
@@ -112,7 +122,7 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
         queue_.pop();
 
         //add the node to settled nodes
-        settled_nodes_.push_back(current_node);
+        settled_[current_node] = true;
 
         //get all edges
         auto edges = graph_.getForwardEdgesOf(current_node);
@@ -138,10 +148,9 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
 auto MultiTargetDijkstra::cleanup()
     -> void
 {
-    fmt::print("CLEANUP\n");
     for(auto&& idx : touched_nodes_) {
         shortest_distances_[idx] = std::numeric_limits<EdgeCost>::max();
+        settled_[idx] = false;
     }
     touched_nodes_.clear();
-    settled_nodes_.clear();
 }
