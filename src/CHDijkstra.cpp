@@ -37,7 +37,7 @@ auto CHDijkstra::shortestDistanceFromTo(const NodeId& source,
 auto CHDijkstra::fillForwardInfo(const datastructure::NodeId& source)
     -> void
 {
-    MinHeap queue(QueueElemCmp);
+    MinHeap queue;
 
     queue.push({0, source});
 
@@ -73,7 +73,7 @@ auto CHDijkstra::fillForwardInfo(const datastructure::NodeId& source)
 auto CHDijkstra::fillBackwardInfo(const datastructure::NodeId& target)
     -> void
 {
-    MinHeap queue(QueueElemCmp);
+    MinHeap queue;
 
     queue.push({0, target});
 

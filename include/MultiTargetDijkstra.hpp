@@ -1,6 +1,6 @@
 #pragma once
+#include <DijkstraQueue.hpp>
 #include <Graph.hpp>
-#include <queue>
 
 namespace pathfinding {
 
@@ -15,11 +15,17 @@ public:
                                 const std::vector<datastructure::NodeId>& targets)
         -> std::vector<datastructure::EdgeCost>;
 
+    auto shortestDistanceFromTo(const datastructure::NodeId& source,
+                                const datastructure::NodeId& target)
+        -> datastructure::EdgeCost;
+
     auto cleanup()
         -> void;
 
 private:
     const datastructure::Graph& graph_;
+    MinHeap queue_;
+    std::optional<datastructure::NodeId> last_source_;
     std::vector<datastructure::NodeId> touched_nodes_;
     std::vector<datastructure::NodeId> settled_nodes_;
     std::vector<datastructure::EdgeCost> shortest_distances_;

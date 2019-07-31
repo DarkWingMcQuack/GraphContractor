@@ -4,6 +4,10 @@
 #include <chrono>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
+#include <iostream>
+
+using namespace datastructure;
+using namespace pathfinding;
 
 class Timer
 {
@@ -28,30 +32,41 @@ private:
 auto main() -> int
 {
     Timer t;
-    fmt::print("read CH Graph...\n");
-    auto ch_graph = datastructure::readFromAllreadyContractedFile("/home/lukas/Downloads/stgtregbz_ch.fmi").value();
+    // fmt::print("read CH Graph...\n");
+    // auto ch_graph = readFromAllreadyContractedFile("/home/lukas/Downloads/stgtregbz_ch.fmi").value();
     fmt::print("read non-CH Graph...\n");
-    auto graph = datastructure::readFromNonContractedFile("/home/lukas/Downloads/stgtregbz.fmi").value();
+    auto graph = readFromNonContractedFile("/home/lukas/Downloads/germany.fmi").value();
     fmt::print("graph build in: {}s\n", t.elapsed());
 
-    pathfinding::CHDijkstra ch_pathfinder{ch_graph};
-    pathfinding::MultiTargetDijkstra pathfinder{graph};
+    // CHDijkstra ch_pathfinder{ch_graph};
+    MultiTargetDijkstra pathfinder{graph};
 
-    t.reset();
-    auto ch_distance = ch_pathfinder.shortestDistanceFromTo(122210,
-                                                            218330);
+    NodeId from;
+    NodeId to;
+    while(true) {
+
+        fmt::print("from: ");
+        std::cin >> from;
+        fmt::print("to: ");
+        std::cin >> to;
+
+
+        t.reset();
+        // auto ch_distance = ch_pathfinder.shortestDistanceFromTo(from,
+                                                                // to);
 
 
 
-    auto ch_time = t.elapsed();
-    fmt::print("calculated ch_distance in: {}s\n", ch_time);
-    t.reset();
+        // auto ch_time = t.elapsed();
+        // fmt::print("calculated ch_distance in: {}s\n", ch_time);
+        // t.reset();
 
 
-    auto distance = pathfinder.shortestDistanceFromTo(122210, {218330});
-    auto normal_time = t.elapsed();
-    fmt::print("calculated distance in: {}s\n", normal_time);
-    fmt::print("ch_distance:\t{}\n", ch_distance);
-    fmt::print("distance:\t{}\n", distance[0]);
-    fmt::print("speedup:\t{}\n", normal_time / ch_time);
+        auto distance = pathfinder.shortestDistanceFromTo(from, to);
+        auto normal_time = t.elapsed();
+        fmt::print("calculated distance in: {}s\n", normal_time);
+        // fmt::print("ch_distance:\t{}\n", ch_distance);
+        fmt::print("distance:\t{}\n", distance);
+        // fmt::print("speedup:\t{}\n", normal_time / ch_time);
+    }
 }
