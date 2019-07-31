@@ -59,15 +59,13 @@ auto UnidirectionGraph::getEdgesOf(const NodeId& node) const
 {
     auto number_of_edges = getNumberOfEdgesOf(node);
 
-    auto offset = [&]() constexpr
-    {
+    auto offset = [&]() {
         if(__builtin_expect((node == 0), 0)) {
             return 0l;
         }
 
         return offset_array_[node - 1];
-    }
-    ();
+    }();
 
     auto* start = &edges_[offset];
 
@@ -79,15 +77,13 @@ auto UnidirectionGraph::getEdgesOf(const NodeId& node)
 {
     auto number_of_edges = getNumberOfEdgesOf(node);
 
-    auto offset = [&]() constexpr
-    {
+    auto offset = [&]() {
         if(__builtin_expect((node == 0), 0)) {
             return 0l;
         }
 
         return offset_array_[node - 1];
-    }
-    ();
+    }();
 
     auto* start = &edges_[offset];
 
