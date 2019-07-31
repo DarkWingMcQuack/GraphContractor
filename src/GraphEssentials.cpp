@@ -2,13 +2,13 @@
 
 using datastructure::Edge;
 
-Edge::Edge(EdgeCost cost,
+Edge::Edge(Distance cost,
            NodeId destination)
     : cost_(cost),
       destination_(destination) {}
 
 auto Edge::getCost() const
-    -> EdgeCost
+    -> Distance
 {
     return cost_;
 }

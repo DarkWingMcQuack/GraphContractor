@@ -2,113 +2,76 @@
 #include <UnidirectionGraph.hpp>
 #include <algorithm>
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 #include <span.hpp>
 
 using datastructure::Edge;
 using datastructure::UnidirectionGraph;
 
-UnidirectionGraph::UnidirectionGraph(std::vector<std::pair<NodeId, Edge>> node_edges)
+UnidirectionGraph::UnidirectionGraph(std::vector<std::vector<Edge>> node_edges)
 {
     if(node_edges.empty()) {
         return;
     }
 
-    std::sort(std::begin(node_edges),
-              std::end(node_edges),
-              [](const auto& lhs, const auto& rhs) {
-                  return lhs.first < rhs.first;
-              });
-
-    std::vector<NodeOffset> offsets(node_edges.back().first + 1, 0);
+    std::vector<NodeOffset> offsets(node_edges.size() + 1, 0);
     std::vector<Edge> edges;
-    edges.reserve(node_edges.size());
 
     NodeOffset offset{0};
-    for(auto&& [node, edge] : node_edges) {
-        offsets[node] = ++offset;
-        edges.push_back(std::move(edge));
+    for(int i{0}; i < node_edges.size(); i++) {
+        offsets[i] = offset;
+        std::move(std::cbegin(node_edges[i]),
+                  std::cend(node_edges[i]),
+                  std::back_inserter(edges));
+        offset = edges.size();
     }
 
-    for(int i{1}; i < offsets.size(); i++) {
-        offsets[i] = std::max(offsets[i],
-                              offsets[i - 1]);
-    }
+
+    offsets[node_edges.size()] = edges.size();
 
     edges_ = std::move(edges);
     offset_array_ = std::move(offsets);
 }
 
-UnidirectionGraph::UnidirectionGraph(std::vector<std::pair<NodeId, Edge>> node_edges,
+UnidirectionGraph::UnidirectionGraph(std::vector<std::vector<Edge>> node_edges,
                                      const std::vector<NodeLevel>& node_levels)
 {
-    node_edges.erase(
-        std::remove_if(std::begin(node_edges),
-                       std::end(node_edges),
-                       [&](const auto& pair) {
-                           const auto& [from, edge] = pair;
-                           auto to = edge.getDestination();
-                           return node_levels[from] >= node_levels[to];
-                       }),
-        std::end(node_edges));
 
-    *this = UnidirectionGraph{std::move(node_edges)};
+    std::vector new_edges(node_edges.size(),
+                          std::vector<Edge>{});
+
+    //erase edges where level[source] >= level[target]
+    for(int from{0}; from < node_edges.size(); from++) {
+        std::copy_if(std::make_move_iterator(std::begin(node_edges[from])),
+                     std::make_move_iterator(std::end(node_edges[from])),
+                     std::back_inserter(new_edges[from]),
+                     [&](auto&& edge) {
+                         auto to = edge.getDestination();
+                         return node_levels[to] > node_levels[from];
+                     });
+    }
+
+    *this = UnidirectionGraph{std::move(new_edges)};
 }
 
 auto UnidirectionGraph::getEdgesOf(const NodeId& node) const
     -> tcb::span<const Edge>
 {
-    auto number_of_edges = getNumberOfEdgesOf(node);
+    auto start_offset = offset_array_[node];
+    auto end_offset = offset_array_[node + 1];
+    auto* start = &edges_[start_offset];
+    auto* end = &edges_[end_offset];
 
-    auto offset = [&]() {
-        if(__builtin_expect((node == 0), 0)) {
-            return 0l;
-        }
-
-        return offset_array_[node - 1];
-    }();
-
-    auto* start = &edges_[offset];
-
-    return {start, number_of_edges};
+    return {start, end};
 }
 
 auto UnidirectionGraph::getEdgesOf(const NodeId& node)
     -> tcb::span<Edge>
 {
-    auto number_of_edges = getNumberOfEdgesOf(node);
+    auto start_offset = offset_array_[node];
+    auto end_offset = offset_array_[node + 1];
+    auto* start = &edges_[start_offset];
+    auto* end = &edges_[end_offset];
 
-    auto offset = [&]() {
-        if(__builtin_expect((node == 0), 0)) {
-            return 0l;
-        }
-
-        return offset_array_[node - 1];
-    }();
-
-    auto* start = &edges_[offset];
-
-    return {start, number_of_edges};
-}
-
-auto UnidirectionGraph::getOffsetArray() const
-    -> const std::vector<NodeOffset>&
-{
-    return offset_array_;
-}
-
-auto UnidirectionGraph::getEdges() const
-    -> const std::vector<Edge>&
-{
-    return edges_;
-}
-
-auto UnidirectionGraph::getNumberOfEdgesOf(const NodeId& node) const
-    -> std::int_fast32_t
-{
-    if(__builtin_expect((node == 0), 0)) {
-        return offset_array_[1];
-    }
-
-    return offset_array_[node]
-        - offset_array_[node - 1];
+    return {start, end};
 }

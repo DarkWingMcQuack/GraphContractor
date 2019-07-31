@@ -7,23 +7,23 @@ namespace datastructure {
 
 using NodeId = std::int_fast32_t;
 using NodeOffset = std::int_fast32_t;
-using EdgeCost = std::int_fast32_t;
+using Distance = std::int_fast32_t;
 using NodeLevel = std::int_fast32_t;
 
 struct Edge
 {
 public:
-    Edge(EdgeCost cost,
+    Edge(Distance cost,
          NodeId destination);
 
     auto getCost() const
-        -> EdgeCost;
+        -> Distance;
 
     auto getDestination() const
         -> NodeId;
 
 private:
-    EdgeCost cost_;
+    Distance cost_;
     NodeId destination_;
 };
 

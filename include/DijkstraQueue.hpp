@@ -8,7 +8,7 @@ namespace pathfinding {
 
 struct QueueElem
 {
-    datastructure::EdgeCost cost_;
+    datastructure::Distance cost_;
     datastructure::NodeId current_position_;
 
     auto operator<(const QueueElem& other) const

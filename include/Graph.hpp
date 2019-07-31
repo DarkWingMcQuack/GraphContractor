@@ -22,16 +22,7 @@ public:
     auto getBackwardEdgesOf(const NodeId& node) const
         -> tcb::span<const Edge>;
 
-    auto getForwardOffsetArray() const
-        -> const std::vector<NodeOffset>&;
-
-    auto getBackwardOffsetArray() const
-        -> const std::vector<NodeOffset>&;
-
     auto getNumberOfNodes() const
-        -> std::uint_fast32_t;
-
-    auto getNumberOfEdges() const
         -> std::uint_fast32_t;
 
     auto getLevelOf(const NodeId& node) const

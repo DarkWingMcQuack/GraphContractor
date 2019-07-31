@@ -84,25 +84,22 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
 
     NodeId from;
     NodeId to;
-    EdgeCost cost;
+    Distance cost;
     int speed;
     int type;
     NodeId child1;
     NodeId child2;
 
-    std::vector<std::pair<NodeId, Edge>> forward_edges;
-    std::vector<std::pair<NodeId, Edge>> backward_edges;
-    forward_edges.reserve(number_of_edges);
-    backward_edges.reserve(number_of_edges);
+    std::vector<std::vector<Edge>> forward_edges(number_of_nodes,
+                                                 std::vector<Edge>{});
+    std::vector<std::vector<Edge>> backward_edges(number_of_nodes,
+                                                  std::vector<Edge>{});
 
     for(int i{0}; i < number_of_edges; i++) {
         in >> from >> to >> cost >> speed >> type >> child1 >> child2;
 
-        Edge forward_edge{cost, to};
-        forward_edges.emplace_back(from, forward_edge);
-
-        Edge backward_edge{cost, from};
-        backward_edges.emplace_back(to, backward_edge);
+        forward_edges[from].emplace_back(cost, to);
+        backward_edges[to].emplace_back(cost, from);
     }
 
     auto forward_future = std::async(
@@ -172,22 +169,20 @@ auto datastructure::readFromNonContractedFile(std::string_view path)
 
     NodeId from;
     NodeId to;
-    EdgeCost cost;
+    Distance cost;
     int speed;
     int type;
 
-    std::vector<std::pair<NodeId, Edge>> forward_edges;
-    std::vector<std::pair<NodeId, Edge>> backward_edges;
-    forward_edges.reserve(number_of_edges);
-    backward_edges.reserve(number_of_edges);
+    std::vector<std::vector<Edge>> forward_edges(number_of_nodes,
+                                                 std::vector<Edge>{});
+    std::vector<std::vector<Edge>> backward_edges(number_of_nodes,
+                                                  std::vector<Edge>{});
 
     for(int i{0}; i < number_of_edges; i++) {
         in >> from >> to >> cost >> speed >> type;
-        Edge forward_edge{cost, to};
-        forward_edges.emplace_back(from, forward_edge);
 
-        Edge backward_edge{cost, from};
-        backward_edges.emplace_back(to, backward_edge);
+        forward_edges[from].emplace_back(cost, to);
+        backward_edges[to].emplace_back(cost, from);
     }
 
     auto forward_future = std::async(
@@ -209,28 +204,8 @@ auto datastructure::readFromNonContractedFile(std::string_view path)
                  std::move(node_levels)};
 }
 
-
-auto Graph::getForwardOffsetArray() const
-    -> const std::vector<NodeOffset>&
-{
-    return forward_graph_.getOffsetArray();
-}
-
-auto Graph::getBackwardOffsetArray() const
-    -> const std::vector<NodeOffset>&
-{
-    return backward_graph_.getOffsetArray();
-}
-
-
 auto Graph::getNumberOfNodes() const
     -> std::uint_fast32_t
 {
     return node_levels_.size();
-}
-
-auto Graph::getNumberOfEdges() const
-    -> std::uint_fast32_t
-{
-    return forward_graph_.getEdges().size();
 }

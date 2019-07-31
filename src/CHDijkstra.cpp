@@ -8,7 +8,7 @@
 using datastructure::Graph;
 using datastructure::NodeId;
 using datastructure::Edge;
-using datastructure::EdgeCost;
+using datastructure::Distance;
 using datastructure::NodeLevel;
 using pathfinding::CHDijkstra;
 
@@ -16,13 +16,13 @@ using pathfinding::CHDijkstra;
 CHDijkstra::CHDijkstra(const datastructure::Graph& graph)
     : graph_(graph),
       forward_shortest_distances_(graph_.getNumberOfNodes(),
-                                  std::numeric_limits<EdgeCost>::max()),
+                                  std::numeric_limits<Distance>::max()),
       backward_shortest_distances_(graph_.getNumberOfNodes(),
-                                   std::numeric_limits<EdgeCost>::max()) {}
+                                   std::numeric_limits<Distance>::max()) {}
 
 auto CHDijkstra::shortestDistanceFromTo(const NodeId& source,
                                         const NodeId& target)
-    -> EdgeCost
+    -> Distance
 {
     //cleanup touched nodes
     cleanup();
@@ -107,7 +107,7 @@ auto CHDijkstra::fillBackwardInfo(const datastructure::NodeId& target)
 }
 
 auto CHDijkstra::findShortestPathInSettledNodes()
-    -> datastructure::EdgeCost
+    -> datastructure::Distance
 {
     std::vector<NodeId> common_nodes;
     common_nodes.reserve(forward_settled_nodes_.size());
@@ -120,7 +120,7 @@ auto CHDijkstra::findShortestPathInSettledNodes()
     return std::accumulate(
         std::cbegin(common_nodes),
         std::cend(common_nodes),
-        std::numeric_limits<EdgeCost>::max(),
+        std::numeric_limits<Distance>::max(),
         [&](auto&& current, auto&& current_common_node) {
             auto up_cost = forward_shortest_distances_[current_common_node];
             auto down_cost = backward_shortest_distances_[current_common_node];
@@ -133,14 +133,14 @@ auto CHDijkstra::cleanup()
 {
     for(auto&& idx : backward_touched_nodes_) {
         backward_shortest_distances_[idx] =
-            std::numeric_limits<EdgeCost>::max();
+            std::numeric_limits<Distance>::max();
     }
     backward_settled_nodes_.clear();
     backward_touched_nodes_.clear();
 
     for(auto&& idx : forward_touched_nodes_) {
         forward_shortest_distances_[idx] =
-            std::numeric_limits<EdgeCost>::max();
+            std::numeric_limits<Distance>::max();
     }
     forward_settled_nodes_.clear();
     forward_touched_nodes_.clear();

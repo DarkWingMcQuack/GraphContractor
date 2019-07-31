@@ -13,7 +13,7 @@ public:
 
     auto shortestDistanceFromTo(const datastructure::NodeId& source,
                                 const datastructure::NodeId& target)
-        -> datastructure::EdgeCost;
+        -> datastructure::Distance;
 
 
 private:
@@ -25,16 +25,16 @@ private:
         -> void;
 
     auto findShortestPathInSettledNodes()
-        -> datastructure::EdgeCost;
+        -> datastructure::Distance;
 
 private:
     const datastructure::Graph& graph_;
     std::vector<datastructure::NodeId> forward_touched_nodes_;
     std::vector<datastructure::NodeId> forward_settled_nodes_;
-    std::vector<datastructure::EdgeCost> forward_shortest_distances_;
+    std::vector<datastructure::Distance> forward_shortest_distances_;
     std::vector<datastructure::NodeId> backward_touched_nodes_;
     std::vector<datastructure::NodeId> backward_settled_nodes_;
-    std::vector<datastructure::EdgeCost> backward_shortest_distances_;
+    std::vector<datastructure::Distance> backward_shortest_distances_;
 };
 
 } // namespace pathfinding

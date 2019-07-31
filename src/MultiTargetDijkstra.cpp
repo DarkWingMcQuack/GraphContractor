@@ -8,7 +8,7 @@
 using datastructure::Graph;
 using datastructure::NodeId;
 using datastructure::Edge;
-using datastructure::EdgeCost;
+using datastructure::Distance;
 using datastructure::NodeLevel;
 using pathfinding::MultiTargetDijkstra;
 
@@ -17,11 +17,11 @@ MultiTargetDijkstra::MultiTargetDijkstra(const datastructure::Graph& graph)
     : graph_(graph),
       settled_(graph_.getNumberOfNodes(), false),
       shortest_distances_(graph_.getNumberOfNodes(),
-                          std::numeric_limits<EdgeCost>::max()) {}
+                          std::numeric_limits<Distance>::max()) {}
 
 auto MultiTargetDijkstra::shortestDistanceFromTo(const NodeId& source,
                                                  const std::vector<NodeId>& targets)
-    -> std::vector<EdgeCost>
+    -> std::vector<Distance>
 {
     if(source != last_source_) {
         last_source_ = source;
@@ -81,7 +81,7 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const NodeId& source,
     }
 
     //get the shortest path distances of all the targets
-    std::vector<EdgeCost> costs;
+    std::vector<Distance> costs;
     costs.reserve(targets.size());
 
     std::transform(std::cbegin(targets),
@@ -97,7 +97,7 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const NodeId& source,
 
 auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& source,
                                                  const datastructure::NodeId& target)
-    -> datastructure::EdgeCost
+    -> datastructure::Distance
 {
     if(source != last_source_) {
         last_source_ = source;
@@ -116,7 +116,7 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
         auto [cost_to_current, current_node] = queue_.top();
 
         if(current_node == target) {
-            break;
+            return cost_to_current;
         }
 
         queue_.pop();
@@ -149,7 +149,7 @@ auto MultiTargetDijkstra::cleanup()
     -> void
 {
     for(auto&& idx : touched_nodes_) {
-        shortest_distances_[idx] = std::numeric_limits<EdgeCost>::max();
+        shortest_distances_[idx] = std::numeric_limits<Distance>::max();
         settled_[idx] = false;
     }
     touched_nodes_.clear();

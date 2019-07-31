@@ -13,11 +13,11 @@ public:
 
     auto shortestDistanceFromTo(const datastructure::NodeId& source,
                                 const std::vector<datastructure::NodeId>& targets)
-        -> std::vector<datastructure::EdgeCost>;
+        -> std::vector<datastructure::Distance>;
 
     auto shortestDistanceFromTo(const datastructure::NodeId& source,
                                 const datastructure::NodeId& target)
-        -> datastructure::EdgeCost;
+        -> datastructure::Distance;
 
     auto cleanup()
         -> void;
@@ -28,7 +28,7 @@ private:
     std::optional<datastructure::NodeId> last_source_;
     std::vector<datastructure::NodeId> touched_nodes_;
     std::vector<bool> settled_;
-    std::vector<datastructure::EdgeCost> shortest_distances_;
+    std::vector<datastructure::Distance> shortest_distances_;
 };
 
 } // namespace pathfinding
