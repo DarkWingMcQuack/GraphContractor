@@ -26,8 +26,6 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const NodeId& source,
     if(source != last_source_) {
         last_source_ = source;
         cleanup();
-        MinHeap new_queue;
-        queue_ = std::move(new_queue);
         queue_.push({0, source});
         shortest_distances_[source] = 0;
     }
@@ -102,8 +100,6 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
     if(source != last_source_) {
         last_source_ = source;
         cleanup();
-        MinHeap new_queue;
-        queue_ = std::move(new_queue);
         queue_.push({0, source});
         shortest_distances_[source] = 0;
     } else if(settled_[target]) {
@@ -153,4 +149,7 @@ auto MultiTargetDijkstra::cleanup()
         settled_[idx] = false;
     }
     touched_nodes_.clear();
+
+    MinHeap new_queue;
+    queue_ = std::move(new_queue);
 }

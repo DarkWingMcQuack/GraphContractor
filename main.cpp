@@ -32,13 +32,13 @@ private:
 auto main() -> int
 {
     Timer t;
-    // fmt::print("read CH Graph...\n");
-    // auto ch_graph = readFromAllreadyContractedFile("/home/lukas/Downloads/stgtregbz_ch.fmi").value();
+    fmt::print("read CH Graph...\n");
+    auto ch_graph = readFromAllreadyContractedFile("/home/lukas/Downloads/stgtregbz_ch.fmi").value();
     fmt::print("read non-CH Graph...\n");
-    auto graph = readFromNonContractedFile("/home/lukas/Downloads/germany.fmi").value();
+    auto graph = readFromNonContractedFile("/home/lukas/Downloads/stgtregbz.fmi").value();
     fmt::print("graph build in: {}s\n", t.elapsed());
 
-    // CHDijkstra ch_pathfinder{ch_graph};
+    CHDijkstra ch_pathfinder{ch_graph};
     MultiTargetDijkstra pathfinder{graph};
 
     NodeId from;
@@ -52,23 +52,23 @@ auto main() -> int
 
 
         t.reset();
-        // auto ch_distance = ch_pathfinder.shortestDistanceFromTo(from,
-        // to);
+        auto ch_distance = ch_pathfinder.shortestDistanceFromTo(from,
+                                                                to);
 
 
 
-        // auto ch_time = t.elapsed();
-        // fmt::print("calculated ch_distance in: {}s\n", ch_time);
-        // t.reset();
+        auto ch_time = t.elapsed();
+        fmt::print("calculated ch_distance in: {}s\n", ch_time);
+        t.reset();
 
 
         auto distance = pathfinder.shortestDistanceFromTo(from, to);
         auto normal_time = t.elapsed();
         auto distances = pathfinder.shortestDistanceFromTo(from, {to, ++to, ++to, ++to, ++to, ++to, ++to, ++to, ++to});
         fmt::print("calculated distances in: {}s\n", normal_time);
-        // fmt::print("ch_distance:\t{}\n", ch_distance);
+        fmt::print("ch_distance:\t{}\n", ch_distance);
         fmt::print("distance:\t{}\n", distance);
         fmt::print("distances:\t{}\n", distances);
-        // fmt::print("speedup:\t{}\n", normal_time / ch_time);
+        fmt::print("speedup:\t{}\n", normal_time / ch_time);
     }
 }
