@@ -34,7 +34,7 @@ private:
     std::vector<NodeLevel> node_levels_;
 };
 
-auto readFromAllreadyContractedFile(const std::string& path)
+auto readFromAllreadyContractedFile(std::string_view path)
     -> std::optional<Graph>;
 
 auto readFromNonContractedFile(std::string_view path)

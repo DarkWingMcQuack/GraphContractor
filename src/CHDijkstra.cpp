@@ -3,6 +3,7 @@
 #include <Graph.hpp>
 #include <GraphEssentials.hpp>
 #include <algorithm>
+#include <fmt/core.h>
 #include <numeric>
 
 using datastructure::Graph;
@@ -61,7 +62,7 @@ auto CHDijkstra::fillForwardInfo(const datastructure::NodeId& source)
             if(new_cost < forward_shortest_distances_[dest]) {
                 queue.emplace(new_cost, dest);
                 forward_shortest_distances_[dest] = new_cost;
-                forward_touched_nodes_.push_back(current_node);
+                forward_touched_nodes_.push_back(dest);
             }
         }
     }
@@ -97,7 +98,7 @@ auto CHDijkstra::fillBackwardInfo(const datastructure::NodeId& target)
             if(new_cost < backward_shortest_distances_[dest]) {
                 queue.emplace(new_cost, dest);
                 backward_shortest_distances_[dest] = new_cost;
-                backward_touched_nodes_.push_back(current_node);
+                backward_touched_nodes_.push_back(dest);
             }
         }
     }

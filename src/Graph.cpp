@@ -38,11 +38,11 @@ auto Graph::getLevelOf(const NodeId& node) const
 }
 
 
-auto datastructure::readFromAllreadyContractedFile(const std::string& path)
+auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     -> std::optional<Graph>
 {
     // Open the File
-    std::ifstream in{path};
+    std::ifstream in{path.data()};
 
     // Check if object is valid
     if(!in.is_open()) {

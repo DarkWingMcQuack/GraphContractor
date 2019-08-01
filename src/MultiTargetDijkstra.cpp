@@ -26,7 +26,7 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const NodeId& source,
     if(source != last_source_) {
         last_source_ = source;
         cleanup();
-        queue_.push({0, source});
+        queue_.emplace(0, source);
         shortest_distances_[source] = 0;
         touched_nodes_.push_back(source);
     }
@@ -73,8 +73,9 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const NodeId& source,
 
             //update shortest distances
             if(new_cost < shortest_distances_[dest]) {
-                queue_.push({new_cost, dest});
+                queue_.emplace(new_cost, dest);
                 shortest_distances_[dest] = new_cost;
+                touched_nodes_.push_back(dest);
             }
         }
     }
@@ -101,7 +102,7 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
     if(source != last_source_) {
         last_source_ = source;
         cleanup();
-        queue_.push({0, source});
+        queue_.emplace(0, source);
         shortest_distances_[source] = 0;
         touched_nodes_.push_back(source);
     } else if(settled_[target]) {
@@ -134,8 +135,9 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
 
 
             if(new_cost < shortest_distances_[dest]) {
-                queue_.push({new_cost, dest});
+                queue_.emplace(new_cost, dest);
                 shortest_distances_[dest] = new_cost;
+                touched_nodes_.push_back(dest);
             }
         }
     }
