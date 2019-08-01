@@ -38,14 +38,14 @@ auto Graph::getLevelOf(const NodeId& node) const
 }
 
 
-auto datastructure::readFromAllreadyContractedFile(std::string_view path)
+auto datastructure::readFromAllreadyContractedFile(const std::string& path)
     -> std::optional<Graph>
 {
     // Open the File
-    std::ifstream in{path.data()};
+    std::ifstream in{path};
 
     // Check if object is valid
-    if(!in) {
+    if(!in.is_open()) {
         fmt::print("unable to open file {}\n", path);
         return std::nullopt;
     }
@@ -105,8 +105,7 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     auto forward_future = std::async(
         std::launch::async,
         [](const auto& edges, const auto& levels) {
-            UnidirectionGraph forward_graph{edges, levels};
-            return forward_graph;
+            return UnidirectionGraph{edges, levels};
         },
         std::cref(forward_edges),
         std::cref(node_levels));
@@ -114,8 +113,7 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     auto backward_future = std::async(
         std::launch::async,
         [](const auto& edges, const auto& levels) {
-            UnidirectionGraph backward_graph{edges, levels};
-            return backward_graph;
+            return UnidirectionGraph{edges, levels};
         },
         std::cref(backward_edges),
         std::cref(node_levels));

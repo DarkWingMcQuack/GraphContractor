@@ -28,6 +28,7 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const NodeId& source,
         cleanup();
         queue_.push({0, source});
         shortest_distances_[source] = 0;
+        touched_nodes_.push_back(source);
     }
 
     //count how many targets are already settled
@@ -102,6 +103,7 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
         cleanup();
         queue_.push({0, source});
         shortest_distances_[source] = 0;
+        touched_nodes_.push_back(source);
     } else if(settled_[target]) {
         return shortest_distances_[target];
     }
@@ -109,7 +111,8 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
     while(!queue_.empty()) {
 
         //get next element from queue
-        auto [cost_to_current, current_node] = queue_.top();
+        auto [cost_to_current,
+              current_node] = queue_.top();
 
         if(current_node == target) {
             return cost_to_current;
@@ -145,7 +148,8 @@ auto MultiTargetDijkstra::cleanup()
     -> void
 {
     for(auto&& idx : touched_nodes_) {
-        shortest_distances_[idx] = std::numeric_limits<Distance>::max();
+        shortest_distances_[idx] =
+            std::numeric_limits<Distance>::max();
         settled_[idx] = false;
     }
     touched_nodes_.clear();

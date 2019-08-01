@@ -38,11 +38,11 @@ auto main() -> int
     auto graph = readFromNonContractedFile("/home/lukas/Downloads/stgtregbz.fmi").value();
     fmt::print("graph build in: {}s\n", t.elapsed());
 
-    CHDijkstra ch_pathfinder{ch_graph};
-    MultiTargetDijkstra pathfinder{graph};
 
     NodeId from;
     NodeId to;
+    CHDijkstra ch_pathfinder{ch_graph};
+    MultiTargetDijkstra pathfinder{graph};
     while(true) {
 
         fmt::print("from: ");

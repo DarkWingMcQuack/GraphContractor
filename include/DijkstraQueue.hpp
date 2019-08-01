@@ -11,6 +11,10 @@ struct QueueElem
     datastructure::Distance cost_;
     datastructure::NodeId current_position_;
 
+    QueueElem(datastructure::Distance cost,
+              datastructure::NodeId current_pos)
+        : cost_(cost), current_position_(current_pos) {}
+
     auto operator<(const QueueElem& other) const
         -> bool
     {
@@ -18,13 +22,6 @@ struct QueueElem
     }
 };
 
-// constexpr static inline auto QueueElemCmp =
-//     [](auto&& lhs, auto&& rhs) constexpr
-// {
-//     return lhs.cost_ > rhs.cost_;
-// };
-
 using MinHeap = std::priority_queue<QueueElem,
                                     std::vector<QueueElem>>;
-// decltype(QueueElemCmp)>;
 } // namespace pathfinding
