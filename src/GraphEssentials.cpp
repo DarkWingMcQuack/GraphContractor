@@ -1,6 +1,8 @@
 #include <GraphEssentials.hpp>
 
 using datastructure::Edge;
+using datastructure::Distance;
+using datastructure::NodeId;
 
 Edge::Edge(Distance cost,
            NodeId destination)
