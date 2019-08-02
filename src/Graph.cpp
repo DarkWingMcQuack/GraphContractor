@@ -90,10 +90,10 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     NodeId child1;
     NodeId child2;
 
-    std::vector<std::vector<Edge>> forward_edges(number_of_nodes,
-                                                 std::vector<Edge>{});
-    std::vector<std::vector<Edge>> backward_edges(number_of_nodes,
-                                                  std::vector<Edge>{});
+    std::vector forward_edges(number_of_nodes,
+                              std::vector<Edge>{});
+    std::vector backward_edges(number_of_nodes,
+                               std::vector<Edge>{});
 
     for(int i{0}; i < number_of_edges; i++) {
         in >> from >> to >> cost >> speed >> type >> child1 >> child2;
@@ -171,10 +171,10 @@ auto datastructure::readFromNonContractedFile(std::string_view path)
     int speed;
     int type;
 
-    std::vector<std::vector<Edge>> forward_edges(number_of_nodes,
-                                                 std::vector<Edge>{});
-    std::vector<std::vector<Edge>> backward_edges(number_of_nodes,
-                                                  std::vector<Edge>{});
+    std::vector forward_edges(number_of_nodes,
+                              std::vector<Edge>{});
+    std::vector backward_edges(number_of_nodes,
+                               std::vector<Edge>{});
 
     for(int i{0}; i < number_of_edges; i++) {
         in >> from >> to >> cost >> speed >> type;
