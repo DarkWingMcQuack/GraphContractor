@@ -162,9 +162,8 @@ auto ContractionGraph::contract(NodeId node) const
         dijkstra.cleanup();
     }
 
-    return {
-        to_delete_edges,
-        to_add_edges};
+    return {to_delete_edges,
+            to_add_edges};
 }
 
 auto ContractionGraph::computeEdgeDifference(NodeId node) const
