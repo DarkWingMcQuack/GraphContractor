@@ -25,6 +25,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 ###get external projects
 ############################
 include(cmake/fmt.cmake)
+include(cmake/span.cmake)
 include(cmake/CLI11.cmake)
 
 #setup flags and ccache
@@ -38,9 +39,10 @@ add_executable(GraphContractor main.cpp)
 
 target_sources(GraphContractor
   PUBLIC
-  ${CMAKE_CURRENT_LIST_DIR}/include/span.hpp
+  # ${CMAKE_CURRENT_LIST_DIR}/include/span.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/Graph.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/UnidirectionGraph.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/ContractionGraph.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/GraphEssentials.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/MultiTargetDijkstra.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/CHDijkstra.hpp
@@ -49,6 +51,7 @@ target_sources(GraphContractor
 
   PRIVATE
   src/Graph.cpp
+  src/ContractionGraph.cpp
   src/GraphEssentials.cpp
   src/UnidirectionGraph.cpp
   src/MultiTargetDijkstra.cpp
@@ -59,6 +62,8 @@ target_sources(GraphContractor
 target_include_directories(GraphContractor PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   fmt
+  span
+  ${SPAN_INCLUDE_DIR}
   ${CLI11_INCLUDE_DIR})
 
 #link against libarys
@@ -68,4 +73,5 @@ target_link_libraries(GraphContractor LINK_PUBLIC
 
 #make sure everything is build in the right order
 add_dependencies(GraphContractor fmt-project)
+add_dependencies(GraphContractor span-project)
 add_dependencies(GraphContractor CLI11-project)
