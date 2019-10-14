@@ -15,6 +15,9 @@ public:
     UnidirectionGraph(std::vector<std::vector<Edge>> node_edges,
                       const std::vector<NodeLevel>& node_levels);
 
+    UnidirectionGraph(std::vector<NodeOffset> offset_array,
+                      std::vector<Edge> edges);
+
     auto getEdgesOf(const NodeId& node) const
         -> tcb::span<const Edge>;
 
@@ -24,9 +27,9 @@ private:
 
 private:
     /*
-     * offset_array points into edge_ids
-     * edge_ids then points into edges to get the properties
-     */
+	* offset_array points into edge_ids
+	* edge_ids then points into edges to get the properties
+	*/
     std::vector<NodeOffset> offset_array_;
     std::vector<Edge> edges_;
 };

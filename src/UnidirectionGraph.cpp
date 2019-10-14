@@ -54,6 +54,12 @@ UnidirectionGraph::UnidirectionGraph(std::vector<std::vector<Edge>> adjacency_li
     *this = UnidirectionGraph{std::move(new_edges)};
 }
 
+UnidirectionGraph::UnidirectionGraph(std::vector<NodeOffset> offset_array,
+                                     std::vector<Edge> edges)
+    : offset_array_(std::move(offset_array)),
+      edges_(edges) {}
+
+
 auto UnidirectionGraph::getEdgesOf(const NodeId& node) const
     -> tcb::span<const Edge>
 {
