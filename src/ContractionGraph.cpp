@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
+#include <future>
 #include <iterator>
 #include <span.hpp>
 #include <vector>
@@ -166,10 +167,79 @@ auto ContractionGraph::contract(NodeId node) const
             to_add_edges};
 }
 
-auto ContractionGraph::computeEdgeDifference(NodeId node) const
-    -> std::int64_t
+auto ContractionGraph::getNSmallestEdgeDifferenceContractions(std::vector<NodeId> independent_set,
+                                                              std::int64_t number_of_maximal_contractions)
+    -> std::vector<
+        std::pair<std::vector<std::pair<NodeId, // source
+                                        Edge>>, //edges to delete
+                  std::vector<std::pair<NodeId, //source
+                                        Edge>>>> //edges to add
 {
-    auto [add, del] = contract(node);
+    using ContractionInfo =
+        std::pair<std::vector<std::pair<NodeId, // source
+                                        Edge>>, //edges to delete
+                  std::vector<std::pair<NodeId, //source
+                                        Edge>>>;
 
-    return add.size() - del.size();
+    using SortableContractionInfo =
+        std::pair<std::int64_t,
+                  ContractionInfo>;
+
+    std::vector<std::future<SortableContractionInfo>> future_vec;
+
+    std::transform(std::cbegin(independent_set),
+                   std::cend(independent_set),
+                   std::back_inserter(future_vec),
+                   [this](auto node) {
+                       return std::async([this, node]() {
+                           auto [to_delete, to_add] = contract(node);
+                           auto edge_difference =
+                               to_add.size() - to_delete.size();
+
+                           ContractionInfo info{std::move(to_delete),
+                                                std::move(to_add)};
+
+                           return SortableContractionInfo{edge_difference,
+                                                          std::move(info)};
+                       });
+                   });
+
+    std::vector<SortableContractionInfo> result_vec;
+
+    std::transform(std::make_move_iterator(std::begin(future_vec)),
+                   std::make_move_iterator(std::end(future_vec)),
+                   std::back_inserter(result_vec),
+                   [](auto&& future) {
+                       return future.get();
+                   });
+
+    std::vector<ContractionInfo> ret_vec;
+
+    if(number_of_maximal_contractions > result_vec.size()) {
+        std::transform(std::make_move_iterator(std::begin(result_vec)),
+                       std::make_move_iterator(std::end(result_vec)),
+                       std::back_inserter(ret_vec),
+                       [](auto&& result) {
+                           return result.second;
+                       });
+    } else {
+        auto max_elem_iter = std::begin(result_vec)
+            + number_of_maximal_contractions - 1;
+
+        std::nth_element(std::begin(result_vec),
+                         max_elem_iter,
+                         std::end(result_vec),
+                         [](const auto& lhs, const auto& rhs) {
+                             return lhs.first < rhs.first;
+                         });
+
+        std::transform(std::make_move_iterator(std::begin(result_vec)),
+                       std::make_move_iterator(max_elem_iter),
+                       std::back_inserter(ret_vec),
+                       [](auto&& result) {
+                           return result.second;
+                       });
+    }
+
+    return ret_vec;
 }

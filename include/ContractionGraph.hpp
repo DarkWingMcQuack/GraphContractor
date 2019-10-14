@@ -60,9 +60,13 @@ private:
     auto constructIndependentSet() const
         -> std::vector<NodeId>;
 
-    auto computeEdgeDifference(NodeId nodes) const
-        -> std::int64_t;
-
+    auto getNSmallestEdgeDifferenceContractions(std::vector<NodeId> independent_set,
+                                                std::int64_t number_of_maximal_contractions)
+        -> std::vector<
+            std::pair<std::vector<std::pair<NodeId, // source
+                                            Edge>>, //edges to delete
+                      std::vector<std::pair<NodeId, //source
+                                            Edge>>>>; //edges to add
 
 private:
     /*
