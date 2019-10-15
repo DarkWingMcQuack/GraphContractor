@@ -37,6 +37,12 @@ auto Graph::getLevelOf(const NodeId& node) const
     return node_levels_[node];
 }
 
+auto Graph::setLevelOf(NodeId node, NodeLevel level)
+    -> void
+{
+    node_levels_[node] = level;
+}
+
 
 auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     -> std::optional<Graph>

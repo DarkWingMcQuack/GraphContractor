@@ -28,6 +28,9 @@ public:
     auto getLevelOf(const NodeId& node) const
         -> NodeLevel;
 
+    auto setLevelOf(NodeId node, NodeLevel level)
+        -> void;
+
 private:
     UnidirectionGraph forward_graph_;
     UnidirectionGraph backward_graph_;
