@@ -16,9 +16,6 @@ public:
     ContractionGraph(std::vector<std::vector<Edge>> node_edges);
 
 private:
-    auto isContracted(NodeId node) const
-        -> bool;
-
     auto areIndependent(NodeId first, NodeId second) const
         -> bool;
 
@@ -34,10 +31,6 @@ private:
     auto contract(NodeId node) const
         -> std::pair<std::vector<std::pair<NodeId, Edge>>, //edges to delete
                      std::vector<std::pair<NodeId, Edge>>>; //edges to add
-
-    auto rebuild(std::vector<Edge> new_edges,
-                 std::vector<NodeId> contracted_nodes)
-        -> void;
 
     auto constructIndependentSet() const
         -> std::vector<NodeId>;
@@ -56,9 +49,9 @@ private:
                                   Edge>>>; //edges to add
 
 private:
-    std::vector<bool> contracted_nodes;
     Graph graph_;
     NodeLevel current_level{0};
+    std::int64_t already_contracted{0};
 };
 
 } // namespace datastructure

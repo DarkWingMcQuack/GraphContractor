@@ -17,12 +17,6 @@ using datastructure::UnidirectionGraph;
 using datastructure::ContractionGraph;
 using pathfinding::MultiTargetDijkstra;
 
-auto ContractionGraph::isContracted(NodeId node) const
-    -> bool
-{
-    return contracted_nodes[node];
-}
-
 auto ContractionGraph::areIndependent(NodeId first, NodeId second) const
     -> bool
 {
