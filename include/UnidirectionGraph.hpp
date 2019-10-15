@@ -21,6 +21,10 @@ public:
     auto getEdgesOf(const NodeId& node) const
         -> tcb::span<const Edge>;
 
+    auto rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
+                 const std::vector<std::pair<NodeId, Edge>>& needless_edges)
+        -> void;
+
 private:
     auto getEdgesOf(const NodeId& node)
         -> tcb::span<Edge>;

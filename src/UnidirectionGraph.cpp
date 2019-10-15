@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
+#include <iterator>
 #include <span.hpp>
 
 using datastructure::Edge;
@@ -36,7 +37,6 @@ UnidirectionGraph::UnidirectionGraph(std::vector<std::vector<Edge>> adjacency_li
 UnidirectionGraph::UnidirectionGraph(std::vector<std::vector<Edge>> adjacency_list,
                                      const std::vector<NodeLevel>& node_levels)
 {
-
     std::vector new_edges(adjacency_list.size(),
                           std::vector<Edge>{});
 
@@ -80,4 +80,50 @@ auto UnidirectionGraph::getEdgesOf(const NodeId& node)
     auto* end = &edges_[end_offset];
 
     return {start, end};
+}
+
+
+auto UnidirectionGraph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
+                                const std::vector<std::pair<NodeId, Edge>>& needless_edges)
+    -> void
+{
+    std::vector<NodeOffset> offsets(offset_array_.size(), 0);
+    std::vector<Edge> edges;
+
+    NodeOffset offset{0};
+    for(int i{0}; i < offset_array_.size(); i++) {
+        offsets[i] = offset;
+
+        //add all shortcuts of node i
+        std::copy_if(std::make_move_iterator(std::begin(shortcuts)),
+                     std::make_move_iterator(std::end(shortcuts)),
+                     std::back_inserter(edges),
+                     [i](const auto& shortcut) {
+                         const auto& [node, _] = shortcut;
+                         return node == i;
+                     });
+
+        //add all edges which were not replaced by a shortcut
+        auto known_edges = getEdgesOf(i);
+        std::copy_if(std::make_move_iterator(std::begin(known_edges)),
+                     std::make_move_iterator(std::end(known_edges)),
+                     std::back_inserter(edges),
+                     [&](const auto& known_edge) {
+                         return std::any_of(std::cbegin(needless_edges),
+                                            std::cend(needless_edges),
+                                            [&](const auto& pair) {
+                                                const auto& [node, needless_edge] = pair;
+                                                return node == i
+                                                    && known_edge == needless_edge;
+                                            });
+                     });
+
+        offset = edges.size();
+    }
+
+
+    offsets[offset_array_.size()] = edges.size();
+
+    edges_ = std::move(edges);
+    offset_array_ = std::move(offsets);
 }
