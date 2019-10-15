@@ -17,6 +17,38 @@ using datastructure::UnidirectionGraph;
 using datastructure::ContractionGraph;
 using pathfinding::MultiTargetDijkstra;
 
+
+auto ContractionGraph::contractGraph()
+    -> void
+{
+    while(!graphFullContracted()) {
+        auto independent_set = constructIndependentSet();
+        auto [shortcuts, useless] =
+            getBestContractions(std::move(independent_set));
+        graph_.rebuild(shortcuts, useless, ++current_level);
+    }
+}
+
+auto ContractionGraph::getGraph()
+    -> Graph&
+{
+    return graph_;
+}
+
+
+auto ContractionGraph::graphFullContracted() const
+    -> bool
+{
+    const auto& levels = graph_.getLevels();
+    return std::all_of(std::cbegin(levels),
+                       std::cend(levels),
+                       [](auto level) {
+                           return level != 0;
+                       });
+}
+
+
+
 auto ContractionGraph::areIndependent(NodeId first, NodeId second) const
     -> bool
 {

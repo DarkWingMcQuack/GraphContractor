@@ -36,6 +36,9 @@ public:
                  NodeLevel level)
         -> void;
 
+    auto getLevels() const
+        -> const std::vector<NodeLevel>&;
+
 private:
     UnidirectionGraph forward_graph_;
     UnidirectionGraph backward_graph_;

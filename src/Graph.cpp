@@ -236,3 +236,10 @@ auto Graph::getNumberOfNodes() const
 {
     return node_levels_.size();
 }
+
+
+auto Graph::getLevels() const
+    -> const std::vector<NodeLevel>&
+{
+    return node_levels_;
+}

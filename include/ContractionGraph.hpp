@@ -13,10 +13,20 @@ namespace datastructure {
 class ContractionGraph
 {
 public:
-    ContractionGraph(std::vector<std::vector<Edge>> node_edges);
+    // ContractionGraph(std::vector<std::vector<Edge>> node_edges);
+    ContractionGraph(Graph graph);
+
+    auto contractGraph()
+        -> void;
+
+    auto getGraph()
+        -> Graph&;
 
 private:
     auto areIndependent(NodeId first, NodeId second) const
+        -> bool;
+
+    auto graphFullContracted() const
         -> bool;
 
     auto numberOfIngoingEdges(NodeId node) const
