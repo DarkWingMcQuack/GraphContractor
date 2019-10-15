@@ -43,6 +43,26 @@ auto Graph::setLevelOf(NodeId node, NodeLevel level)
     node_levels_[node] = level;
 }
 
+auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& forward_shortcuts,
+                    const std::vector<std::pair<NodeId, Edge>>& forward_needless_edges,
+                    const std::vector<std::pair<NodeId, Edge>>& backward_shortcuts,
+                    const std::vector<std::pair<NodeId, Edge>>& backward_needless_edges)
+    -> void
+{
+    auto forward_fut = std::async([&]() {
+        forward_graph_.rebuild(forward_shortcuts,
+                               forward_needless_edges);
+    });
+
+    auto backward_fut = std::async([&]() {
+        backward_graph_.rebuild(backward_shortcuts,
+                                backward_needless_edges);
+    });
+
+    forward_fut.get();
+    backward_fut.get();
+}
+
 
 auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     -> std::optional<Graph>
