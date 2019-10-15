@@ -22,6 +22,13 @@ public:
     auto getDestination() const
         -> NodeId;
 
+    auto setDestination(NodeId destination)
+        -> void;
+
+    auto operator==(const Edge&) const
+        -> bool;
+
+
 private:
     Distance cost_;
     NodeId destination_;

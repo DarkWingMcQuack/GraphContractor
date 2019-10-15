@@ -25,6 +25,10 @@ public:
                  const std::vector<std::pair<NodeId, Edge>>& needless_edges)
         -> void;
 
+    auto rebuildBackward(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
+                         const std::vector<std::pair<NodeId, Edge>>& needless_edges)
+        -> void;
+
 private:
     auto getEdgesOf(const NodeId& node)
         -> tcb::span<Edge>;

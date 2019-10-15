@@ -31,10 +31,8 @@ public:
     auto setLevelOf(NodeId node, NodeLevel level)
         -> void;
 
-    auto rebuild(const std::vector<std::pair<NodeId, Edge>>& forward_shortcuts,
-                 const std::vector<std::pair<NodeId, Edge>>& forward_needless_edges,
-                 const std::vector<std::pair<NodeId, Edge>>& backward_shortcuts,
-                 const std::vector<std::pair<NodeId, Edge>>& backward_needless_edges)
+    auto rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
+                 const std::vector<std::pair<NodeId, Edge>>& needless_edges)
         -> void;
 
 private:

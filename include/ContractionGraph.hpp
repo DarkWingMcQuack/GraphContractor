@@ -15,27 +15,9 @@ class ContractionGraph
 public:
     ContractionGraph(std::vector<std::vector<Edge>> node_edges);
 
-    auto getForwardEdgesOf(NodeId node) const
-        -> tcb::span<const Edge>;
-
-    auto getBackwardEdgesOf(NodeId node) const
-        -> tcb::span<const Edge>;
-
 private:
-    auto getForwardEdgesOf(NodeId node)
-        -> tcb::span<Edge>;
-
-    auto getBackwardEdgesOf(NodeId node)
-        -> tcb::span<Edge>;
-
     auto isContracted(NodeId node) const
         -> bool;
-
-    auto getForwardReachableNodes(NodeId node) const
-        -> std::vector<NodeId>;
-
-    auto getBackwardReachableNodes(NodeId node) const
-        -> std::vector<NodeId>;
 
     auto areIndependent(NodeId first, NodeId second) const
         -> bool;
@@ -79,12 +61,12 @@ private:
     std::vector<Edge> backward_edges_;
     std::vector<std::int64_t> node_level;
     std::vector<bool> contracted_nodes;
-    std::vector<std::int64_t> number_of_ingoing_edges;
 
     //needed to perform dijkstras
     //offset arrays will be moved into the graph before performin dijkstras
     //and will then be moved out of it again after the dijkstras are finished
     std::optional<Graph> graph_opt_;
+    Graph graph_;
 };
 
 } // namespace datastructure

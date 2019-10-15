@@ -20,3 +20,17 @@ auto Edge::getDestination() const
 {
     return destination_;
 }
+
+auto Edge::setDestination(NodeId destination)
+    -> void
+{
+    destination_ = destination;
+}
+
+
+auto Edge::operator==(const Edge& rhs) const
+    -> bool
+{
+    return cost_ == rhs.cost_
+        && destination_ == rhs.destination_;
+}

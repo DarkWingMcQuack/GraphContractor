@@ -16,66 +16,6 @@ using datastructure::UnidirectionGraph;
 using datastructure::ContractionGraph;
 using pathfinding::MultiTargetDijkstra;
 
-auto ContractionGraph::getForwardEdgesOf(NodeId node) const
-    -> tcb::span<const Edge>
-{
-    auto start_offset = forward_offset_array_[node];
-    auto end_offset = forward_offset_array_[node + 1];
-    auto* start = &forward_edges_[start_offset];
-    auto* end = &forward_edges_[end_offset];
-
-    return {start, end};
-}
-
-auto ContractionGraph::getForwardEdgesOf(NodeId node)
-    -> tcb::span<Edge>
-{
-    auto start_offset = forward_offset_array_[node];
-    auto end_offset = forward_offset_array_[node + 1];
-    auto* start = &forward_edges_[start_offset];
-    auto* end = &forward_edges_[end_offset];
-
-    return {start, end};
-}
-
-auto ContractionGraph::getBackwardEdgesOf(NodeId node) const
-    -> tcb::span<const Edge>
-{
-    auto start_offset = backward_offset_array_[node];
-    auto end_offset = backward_offset_array_[node + 1];
-    auto* start = &backward_edges_[start_offset];
-    auto* end = &backward_edges_[end_offset];
-
-    return {start, end};
-}
-
-auto ContractionGraph::getBackwardEdgesOf(NodeId node)
-    -> tcb::span<Edge>
-{
-    auto start_offset = backward_offset_array_[node];
-    auto end_offset = backward_offset_array_[node + 1];
-    auto* start = &backward_edges_[start_offset];
-    auto* end = &backward_edges_[end_offset];
-
-    return {start, end};
-}
-
-auto ContractionGraph::getForwardReachableNodes(NodeId node) const
-    -> std::vector<NodeId>
-{
-    auto edges = getForwardEdgesOf(node);
-    std::vector<NodeId> reachable_nodes;
-
-    std::transform(std::cbegin(edges),
-                   std::cend(edges),
-                   std::back_inserter(reachable_nodes),
-                   [](const auto& edge) {
-                       return edge.getDestination();
-                   });
-
-    return reachable_nodes;
-}
-
 auto ContractionGraph::isContracted(NodeId node) const
     -> bool
 {
@@ -85,43 +25,70 @@ auto ContractionGraph::isContracted(NodeId node) const
 auto ContractionGraph::areIndependent(NodeId first, NodeId second) const
     -> bool
 {
-    auto first_reachable = getForwardReachableNodes(first);
-    auto second_reachable = getForwardReachableNodes(second);
+    auto forward_edges = graph_.getForwardEdgesOf(first);
+    auto backward_edges = graph_.getBackwardEdgesOf(first);
 
-    std::sort(std::begin(first_reachable),
-              std::end(first_reachable));
-    std::sort(std::begin(second_reachable),
-              std::end(second_reachable));
+    auto is_successor =
+        std::find_if(std::cbegin(backward_edges),
+                     std::cend(backward_edges),
+                     [second](const auto& edge) {
+                         return edge.getDestination() == second;
+                     })
+        != std::cend(backward_edges);
 
-    std::vector<NodeId> intersection;
+    if(is_successor) {
+        return false;
+    }
 
-    std::set_intersection(std::cbegin(first_reachable),
-                          std::cend(first_reachable),
-                          std::cbegin(second_reachable),
-                          std::cend(second_reachable),
-                          std::back_inserter(intersection));
+    auto is_predecessor =
+        std::find_if(std::cbegin(forward_edges),
+                     std::cend(forward_edges),
+                     [second](const auto& edge) {
+                         return edge.getDestination() == second;
+                     })
+        != std::cend(forward_edges);
 
-    return intersection.empty();
+    return !is_predecessor;
 }
 
 
 auto ContractionGraph::numberOfIngoingEdges(NodeId node) const
     -> std::int64_t
 {
-    auto edges = getBackwardEdgesOf(node);
-    return edges.size();
+    return graph_.getBackwardEdgesOf(node).size();
 }
 
 auto ContractionGraph::numberOfOutgoingEdges(NodeId node) const
     -> std::int64_t
 {
-    auto edges = getForwardEdgesOf(node);
-    return edges.size();
+    return graph_.getForwardEdgesOf(node).size();
 }
 
 auto ContractionGraph::constructIndependentSet() const
     -> std::vector<NodeId>
 {
+    // std::vector<bool> markedNodes;
+    // std::vector<NodeId> independent_set;
+    // independent_set.reserve(count);
+
+    // auto number_of_nodes = forward_offset_array_.size() - 1;
+
+    // NodeId first_node = std::rand() % forward_offset_array_.size() - 1;
+
+    // for(auto i = first_node; i < number_of_nodes; i++) {
+    //     NodeId id = graph.nodes[i].id;
+    //     if(!markedNodes[id]) {
+    //         markedNodes[id] = true;
+    //         independentSet.emplace_back(id);
+    //         // mark all outgoing nodes
+    //         for(auto j = graph.offset[id]; j < graph.offset[id + 1]; ++j) {
+    //             markedNodes[graph.edges[j].target] = true;
+    //         }
+    //         for(auto j = backgraph.offset[id]; j < backgraph.offset[id + 1]; ++j) {
+    //             markedNodes[backgraph.edges[j].target] = true;
+    //         }
+    //     }
+    // }
 }
 
 
@@ -132,8 +99,8 @@ auto ContractionGraph::contract(NodeId node) const
     const auto& graph = graph_opt_.value();
     MultiTargetDijkstra dijkstra{graph};
 
-    auto source_edges = getBackwardEdgesOf(node);
-    auto target_edges = getForwardEdgesOf(node);
+    auto source_edges = graph_.getBackwardEdgesOf(node);
+    auto target_edges = graph_.getForwardEdgesOf(node);
 
     std::vector<std::pair<NodeId, Edge>> to_delete_edges;
     std::vector<std::pair<NodeId, Edge>> to_add_edges;
