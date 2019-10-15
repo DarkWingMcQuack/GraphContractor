@@ -42,31 +42,23 @@ private:
     auto constructIndependentSet() const
         -> std::vector<NodeId>;
 
-    auto getNSmallestEdgeDifferenceContractions(std::vector<NodeId> independent_set,
-                                                std::int64_t number_of_maximal_contractions)
-        -> std::vector<
-            std::pair<std::vector<std::pair<NodeId, // source
-                                            Edge>>, //edges to delete
-                      std::vector<std::pair<NodeId, //source
-                                            Edge>>>>; //edges to add
+    auto getEdgeDegreeSortedNodes() const
+        -> std::vector<NodeId>;
+
+    auto getDegreeOf(NodeId node) const
+        -> std::int64_t;
+
+    auto getBestContractions(std::vector<NodeId> independent_set)
+        -> std::pair<
+            std::vector<std::pair<NodeId, // source
+                                  Edge>>, //edges to delete
+            std::vector<std::pair<NodeId, //source
+                                  Edge>>>; //edges to add
 
 private:
-    /*
-	* offset_array points into edge_ids
-	* edge_ids then points into edges to get the properties
-	*/
-    std::vector<NodeOffset> forward_offset_array_;
-    std::vector<Edge> forward_edges_;
-    std::vector<NodeOffset> backward_offset_array_;
-    std::vector<Edge> backward_edges_;
-    std::vector<std::int64_t> node_level;
     std::vector<bool> contracted_nodes;
-
-    //needed to perform dijkstras
-    //offset arrays will be moved into the graph before performin dijkstras
-    //and will then be moved out of it again after the dijkstras are finished
-    std::optional<Graph> graph_opt_;
     Graph graph_;
+    NodeLevel current_level{0};
 };
 
 } // namespace datastructure

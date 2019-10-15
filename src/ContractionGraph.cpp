@@ -7,6 +7,7 @@
 #include <fmt/ranges.h>
 #include <future>
 #include <iterator>
+#include <numeric>
 #include <span.hpp>
 #include <vector>
 
@@ -67,28 +68,58 @@ auto ContractionGraph::numberOfOutgoingEdges(NodeId node) const
 auto ContractionGraph::constructIndependentSet() const
     -> std::vector<NodeId>
 {
-    // std::vector<bool> markedNodes;
-    // std::vector<NodeId> independent_set;
-    // independent_set.reserve(count);
+    auto nodes = getEdgeDegreeSortedNodes();
+    std::vector<bool> visited(nodes.size(), false);
+    std::vector<NodeId> independent_set;
 
-    // auto number_of_nodes = forward_offset_array_.size() - 1;
+    for(auto node : nodes) {
+        if(!visited[node] && graph_.getLevelOf(node) != 0) {
+            visited[node] = true;
+            independent_set.emplace_back(node);
 
-    // NodeId first_node = std::rand() % forward_offset_array_.size() - 1;
+            auto forward_edges = graph_.getForwardEdgesOf(node);
+            auto backward_edges = graph_.getBackwardEdgesOf(node);
 
-    // for(auto i = first_node; i < number_of_nodes; i++) {
-    //     NodeId id = graph.nodes[i].id;
-    //     if(!markedNodes[id]) {
-    //         markedNodes[id] = true;
-    //         independentSet.emplace_back(id);
-    //         // mark all outgoing nodes
-    //         for(auto j = graph.offset[id]; j < graph.offset[id + 1]; ++j) {
-    //             markedNodes[graph.edges[j].target] = true;
-    //         }
-    //         for(auto j = backgraph.offset[id]; j < backgraph.offset[id + 1]; ++j) {
-    //             markedNodes[backgraph.edges[j].target] = true;
-    //         }
-    //     }
-    // }
+            for(const auto& edge : forward_edges) {
+                auto target = edge.getDestination();
+                visited[target] = true;
+            }
+
+            for(const auto& edge : backward_edges) {
+                auto target = edge.getDestination();
+                visited[target] = true;
+            }
+        }
+    }
+
+    return independent_set;
+}
+
+auto ContractionGraph::getEdgeDegreeSortedNodes() const
+    -> std::vector<NodeId>
+{
+    std::vector<NodeId> nodes(graph_.getNumberOfNodes());
+    std::iota(std::begin(nodes),
+              std::end(nodes),
+              0);
+
+    std::sort(std::begin(nodes),
+              std::end(nodes),
+              [this](const auto& lhs, const auto& rhs) {
+                  return getDegreeOf(lhs) < getDegreeOf(rhs);
+              });
+
+    return nodes;
+}
+
+
+auto ContractionGraph::getDegreeOf(NodeId node) const
+    -> std::int64_t
+{
+    auto forward = graph_.getForwardEdgesOf(node).size();
+    auto backward = graph_.getBackwardEdgesOf(node).size();
+
+    return forward + backward;
 }
 
 
@@ -96,8 +127,7 @@ auto ContractionGraph::contract(NodeId node) const
     -> std::pair<std::vector<std::pair<NodeId, Edge>>,
                  std::vector<std::pair<NodeId, Edge>>>
 {
-    const auto& graph = graph_opt_.value();
-    MultiTargetDijkstra dijkstra{graph};
+    MultiTargetDijkstra dijkstra{graph_};
 
     auto source_edges = graph_.getBackwardEdgesOf(node);
     auto target_edges = graph_.getForwardEdgesOf(node);
@@ -134,13 +164,26 @@ auto ContractionGraph::contract(NodeId node) const
             to_add_edges};
 }
 
-auto ContractionGraph::getNSmallestEdgeDifferenceContractions(std::vector<NodeId> independent_set,
-                                                              std::int64_t number_of_maximal_contractions)
-    -> std::vector<
-        std::pair<std::vector<std::pair<NodeId, // source
-                                        Edge>>, //edges to delete
-                  std::vector<std::pair<NodeId, //source
-                                        Edge>>>> //edges to add
+namespace {
+//the stl does not provide transform_if
+template<class InputIt, class OutputIt, class Pred, class Fct>
+void transform_if(InputIt first, InputIt last, OutputIt dest, Pred pred, Fct transform)
+{
+    while(first != last) {
+        if(pred(*first))
+            *dest++ = transform(*first);
+
+        ++first;
+    }
+}
+} // namespace
+
+auto ContractionGraph::getBestContractions(std::vector<NodeId> independent_set)
+    -> std::pair<
+        std::vector<std::pair<NodeId, // source
+                              Edge>>, //edges to delete
+        std::vector<std::pair<NodeId, //source
+                              Edge>>> //edges to add
 {
     using ContractionInfo =
         std::pair<std::vector<std::pair<NodeId, // source
@@ -180,33 +223,40 @@ auto ContractionGraph::getNSmallestEdgeDifferenceContractions(std::vector<NodeId
                        return future.get();
                    });
 
-    std::vector<ContractionInfo> ret_vec;
+    auto average =
+        std::accumulate(std::cbegin(result_vec),
+                        std::cend(result_vec),
+                        0,
+                        [](auto current, const auto& next) {
+                            return current + next.first;
+                        })
+        / result_vec.size();
 
-    if(number_of_maximal_contractions > result_vec.size()) {
-        std::transform(std::make_move_iterator(std::begin(result_vec)),
-                       std::make_move_iterator(std::end(result_vec)),
-                       std::back_inserter(ret_vec),
-                       [](auto&& result) {
-                           return result.second;
-                       });
-    } else {
-        auto max_elem_iter = std::begin(result_vec)
-            + number_of_maximal_contractions - 1;
+    std::vector<std::pair<NodeId,
+                          Edge>>
+        shortcuts;
+    std::vector<std::pair<NodeId,
+                          Edge>>
+        useless_edges;
 
-        std::nth_element(std::begin(result_vec),
-                         max_elem_iter,
-                         std::end(result_vec),
-                         [](const auto& lhs, const auto& rhs) {
-                             return lhs.first < rhs.first;
-                         });
+    for(auto [edgecount, edges] : result_vec) {
+        auto [to_add, to_delete] = std::move(edges);
 
-        std::transform(std::make_move_iterator(std::begin(result_vec)),
-                       std::make_move_iterator(max_elem_iter),
-                       std::back_inserter(ret_vec),
-                       [](auto&& result) {
-                           return result.second;
-                       });
+        std::copy_if(std::make_move_iterator(std::begin(to_add)),
+                     std::make_move_iterator(std::end(to_add)),
+                     std::back_inserter(shortcuts),
+                     [&](const auto&) {
+                         return edgecount < average;
+                     });
+
+        std::copy_if(std::make_move_iterator(std::begin(to_delete)),
+                     std::make_move_iterator(std::end(to_delete)),
+                     std::back_inserter(useless_edges),
+                     [&](const auto&) {
+                         return edgecount < average;
+                     });
     }
 
-    return ret_vec;
+
+    return {shortcuts, useless_edges};
 }
