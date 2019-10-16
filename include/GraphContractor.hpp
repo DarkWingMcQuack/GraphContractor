@@ -23,9 +23,6 @@ public:
         -> Graph&;
 
 private:
-    auto areIndependent(NodeId first, NodeId second) const
-        -> bool;
-
     auto graphFullContracted() const
         -> bool;
 
@@ -52,11 +49,12 @@ private:
         -> std::int64_t;
 
     auto getBestContractions(std::vector<NodeId> independent_set)
-        -> std::pair<
+        -> std::tuple<
             std::vector<std::pair<NodeId, // source
                                   Edge>>, //edges to delete
             std::vector<std::pair<NodeId, //source
-                                  Edge>>>; //edges to add
+                                  Edge>>,
+            std::vector<NodeId>>;
 
 private:
     Graph graph_;

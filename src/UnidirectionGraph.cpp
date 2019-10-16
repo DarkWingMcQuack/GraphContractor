@@ -64,7 +64,7 @@ auto UnidirectionGraph::getEdgesOf(const NodeId& node) const
     -> tcb::span<const Edge>
 {
     auto start_offset = offset_array_[node];
-    auto end_offset = offset_array_[node + 1];
+    auto end_offset = offset_array_.at(node + 1);
     auto* start = &edges_[start_offset];
     auto* end = &edges_[end_offset];
 
@@ -104,42 +104,41 @@ auto UnidirectionGraph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shor
     std::vector<Edge> edges;
 
     NodeOffset offset{0};
-    for(int i{0}; i < offset_array_.size(); i++) {
+    for(int i{0}; i < offset_array_.size() - 1; i++) {
         offsets[i] = offset;
 
         //add all shortcuts of node i
         transform_if(
-            std::make_move_iterator(std::begin(shortcuts)),
-            std::make_move_iterator(std::end(shortcuts)),
+            std::begin(shortcuts),
+            std::end(shortcuts),
             std::back_inserter(edges),
             [i](const auto& shortcut) {
                 const auto& [node, _] = shortcut;
                 return node == i;
             },
-            [](auto shortcut) {
+            [](const auto& shortcut) {
                 return shortcut.second;
             });
 
         //add all edges which were not replaced by a shortcut
         auto known_edges = getEdgesOf(i);
-        std::copy_if(std::make_move_iterator(std::begin(known_edges)),
-                     std::make_move_iterator(std::end(known_edges)),
+        std::copy_if(std::begin(known_edges),
+                     std::end(known_edges),
                      std::back_inserter(edges),
                      [&](const auto& known_edge) {
-                         return std::any_of(std::cbegin(needless_edges),
-                                            std::cend(needless_edges),
-                                            [&](const auto& pair) {
-                                                const auto& [node, needless_edge] = pair;
-                                                return node == i
-                                                    && known_edge == needless_edge;
-                                            });
+                         return !std::any_of(std::cbegin(needless_edges),
+                                             std::cend(needless_edges),
+                                             [&](const auto& pair) {
+                                                 const auto& [node, needless_edge] = pair;
+                                                 return node == i
+                                                     && known_edge == needless_edge;
+                                             });
                      });
 
         offset = edges.size();
     }
 
-
-    offsets[offset_array_.size()] = edges.size();
+    offsets.at(offset_array_.size() - 1) = edges.size();
 
     edges_ = std::move(edges);
     offset_array_ = std::move(offsets);
@@ -154,13 +153,13 @@ auto UnidirectionGraph::rebuildBackward(const std::vector<std::pair<NodeId, Edge
     std::vector<Edge> edges;
 
     NodeOffset offset{0};
-    for(int i{0}; i < offset_array_.size(); i++) {
+    for(int i{0}; i < offset_array_.size() - 1; i++) {
         offsets[i] = offset;
 
         //add all shortcuts of node i
         transform_if(
-            std::make_move_iterator(std::begin(shortcuts)),
-            std::make_move_iterator(std::end(shortcuts)),
+            std::begin(shortcuts),
+            std::end(shortcuts),
             std::back_inserter(edges),
             [i](const auto& shortcut) {
                 const auto& [_, edge] = shortcut;
@@ -174,25 +173,26 @@ auto UnidirectionGraph::rebuildBackward(const std::vector<std::pair<NodeId, Edge
 
         //add all edges which were not replaced by a shortcut
         auto known_edges = getEdgesOf(i);
-        copy_if(std::make_move_iterator(std::begin(known_edges)),
-                std::make_move_iterator(std::end(known_edges)),
-                std::back_inserter(edges),
-                [&](const auto& known_edge) {
-                    return std::any_of(std::cbegin(needless_edges),
-                                       std::cend(needless_edges),
-                                       [&](const auto& pair) {
-                                           const auto& [forward_from, forward_needless_edge] = pair;
-                                           return known_edge.getDestination() == forward_from
-                                               && known_edge.getCost() == forward_needless_edge.getCost()
-                                               && forward_needless_edge.getDestination() == i;
-                                       });
-                });
+        std::copy_if(std::begin(known_edges),
+                     std::end(known_edges),
+                     std::back_inserter(edges),
+                     [&](const auto& known_edge) {
+                         //check if the edge is somewhere
+                         //in the set of edges which is not needed
+                         return !std::any_of(std::cbegin(needless_edges),
+                                             std::cend(needless_edges),
+                                             [&](const auto& pair) {
+                                                 const auto& [node, needless_edge] = pair;
+                                                 return node == known_edge.getDestination()
+                                                     && i == needless_edge.getDestination();
+                                             });
+                     });
 
         offset = edges.size();
     }
 
-
-    offsets[offset_array_.size()] = edges.size();
+    // offsets[offset_array_.size()] = edges.size();
+    offsets[offset_array_.size() - 1] = edges.size();
 
     edges_ = std::move(edges);
     offset_array_ = std::move(offsets);

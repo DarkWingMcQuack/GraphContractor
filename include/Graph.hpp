@@ -33,6 +33,7 @@ public:
 
     auto rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
                  const std::vector<std::pair<NodeId, Edge>>& needless_edges,
+                 const std::vector<NodeId>& contracted_nodes,
                  NodeLevel level)
         -> void;
 

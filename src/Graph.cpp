@@ -45,23 +45,26 @@ auto Graph::setLevelOf(NodeId node, NodeLevel level)
 
 auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
                     const std::vector<std::pair<NodeId, Edge>>& needless_edges,
+                    const std::vector<NodeId>& contracted_nodes,
                     NodeLevel level)
     -> void
 {
-    auto forward_fut = std::async([&]() {
-        forward_graph_.rebuild(shortcuts,
-                               needless_edges);
-    });
+    // auto forward_fut = std::async([&]() {
+    fmt::print("rebuild forward\n");
+    forward_graph_.rebuild(shortcuts,
+                           needless_edges);
+    // });
 
-    auto backward_fut = std::async([&]() {
-        backward_graph_.rebuildBackward(shortcuts,
-                                        needless_edges);
-    });
+    fmt::print("rebuild backward\n");
+    // auto backward_fut = std::async([&]() {
+    backward_graph_.rebuildBackward(shortcuts,
+                                    needless_edges);
+    // });
 
-    forward_fut.get();
-    backward_fut.get();
+    // forward_fut.get();
+    // backward_fut.get();
 
-    for(const auto& [node, _] : shortcuts) {
+    for(auto node : contracted_nodes) {
         node_levels_[node] = level;
     }
 }
