@@ -42,7 +42,7 @@ target_sources(GraphContractor
   # ${CMAKE_CURRENT_LIST_DIR}/include/span.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/Graph.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/UnidirectionGraph.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ContractionGraph.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/GraphContractor.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/GraphEssentials.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/MultiTargetDijkstra.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/CHDijkstra.hpp
@@ -51,7 +51,7 @@ target_sources(GraphContractor
 
   PRIVATE
   src/Graph.cpp
-  src/ContractionGraph.cpp
+  src/GraphContractor.cpp
   src/GraphEssentials.cpp
   src/UnidirectionGraph.cpp
   src/MultiTargetDijkstra.cpp

@@ -10,11 +10,11 @@
 
 namespace datastructure {
 
-class ContractionGraph
+class GraphContractor
 {
 public:
-    // ContractionGraph(std::vector<std::vector<Edge>> node_edges);
-    ContractionGraph(Graph graph);
+    // GraphContractor(std::vector<std::vector<Edge>> node_edges);
+    GraphContractor(Graph graph);
 
     auto contractGraph()
         -> void;

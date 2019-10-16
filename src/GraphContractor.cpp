@@ -1,5 +1,6 @@
+#include "Graph.hpp"
 #include "MultiTargetDijkstra.hpp"
-#include <ContractionGraph.hpp>
+#include <GraphContractor.hpp>
 #include <GraphEssentials.hpp>
 #include <UnidirectionGraph.hpp>
 #include <algorithm>
@@ -14,11 +15,14 @@
 using datastructure::Edge;
 using datastructure::NodeId;
 using datastructure::UnidirectionGraph;
-using datastructure::ContractionGraph;
+using datastructure::GraphContractor;
 using pathfinding::MultiTargetDijkstra;
 
 
-auto ContractionGraph::contractGraph()
+GraphContractor::GraphContractor(Graph graph)
+    : graph_(std::move(graph)) {}
+
+auto GraphContractor::contractGraph()
     -> void
 {
     while(!graphFullContracted()) {
@@ -29,14 +33,14 @@ auto ContractionGraph::contractGraph()
     }
 }
 
-auto ContractionGraph::getGraph()
+auto GraphContractor::getGraph()
     -> Graph&
 {
     return graph_;
 }
 
 
-auto ContractionGraph::graphFullContracted() const
+auto GraphContractor::graphFullContracted() const
     -> bool
 {
     const auto& levels = graph_.getLevels();
@@ -49,7 +53,7 @@ auto ContractionGraph::graphFullContracted() const
 
 
 
-auto ContractionGraph::areIndependent(NodeId first, NodeId second) const
+auto GraphContractor::areIndependent(NodeId first, NodeId second) const
     -> bool
 {
     auto forward_edges = graph_.getForwardEdgesOf(first);
@@ -79,19 +83,19 @@ auto ContractionGraph::areIndependent(NodeId first, NodeId second) const
 }
 
 
-auto ContractionGraph::numberOfIngoingEdges(NodeId node) const
+auto GraphContractor::numberOfIngoingEdges(NodeId node) const
     -> std::int64_t
 {
     return graph_.getBackwardEdgesOf(node).size();
 }
 
-auto ContractionGraph::numberOfOutgoingEdges(NodeId node) const
+auto GraphContractor::numberOfOutgoingEdges(NodeId node) const
     -> std::int64_t
 {
     return graph_.getForwardEdgesOf(node).size();
 }
 
-auto ContractionGraph::constructIndependentSet() const
+auto GraphContractor::constructIndependentSet() const
     -> std::vector<NodeId>
 {
     auto nodes = getEdgeDegreeSortedNodes();
@@ -99,7 +103,7 @@ auto ContractionGraph::constructIndependentSet() const
     std::vector<NodeId> independent_set;
 
     for(auto node : nodes) {
-        if(!visited[node] && graph_.getLevelOf(node) != 0) {
+        if(!visited[node] && graph_.getLevelOf(node) == 0) {
             visited[node] = true;
             independent_set.emplace_back(node);
 
@@ -121,7 +125,7 @@ auto ContractionGraph::constructIndependentSet() const
     return independent_set;
 }
 
-auto ContractionGraph::getEdgeDegreeSortedNodes() const
+auto GraphContractor::getEdgeDegreeSortedNodes() const
     -> std::vector<NodeId>
 {
     std::vector<NodeId> nodes(graph_.getNumberOfNodes());
@@ -139,7 +143,7 @@ auto ContractionGraph::getEdgeDegreeSortedNodes() const
 }
 
 
-auto ContractionGraph::getDegreeOf(NodeId node) const
+auto GraphContractor::getDegreeOf(NodeId node) const
     -> std::int64_t
 {
     auto forward = graph_.getForwardEdgesOf(node).size();
@@ -149,7 +153,7 @@ auto ContractionGraph::getDegreeOf(NodeId node) const
 }
 
 
-auto ContractionGraph::contract(NodeId node) const
+auto GraphContractor::contract(NodeId node) const
     -> std::pair<std::vector<std::pair<NodeId, Edge>>,
                  std::vector<std::pair<NodeId, Edge>>>
 {
@@ -204,7 +208,7 @@ void transform_if(InputIt first, InputIt last, OutputIt dest, Pred pred, Fct tra
 }
 } // namespace
 
-auto ContractionGraph::getBestContractions(std::vector<NodeId> independent_set)
+auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
     -> std::pair<
         std::vector<std::pair<NodeId, // source
                               Edge>>, //edges to delete
@@ -222,6 +226,8 @@ auto ContractionGraph::getBestContractions(std::vector<NodeId> independent_set)
                   ContractionInfo>;
 
     std::vector<std::future<SortableContractionInfo>> future_vec;
+
+    fmt::print("independend set size: {}\n", independent_set.size());
 
     std::transform(std::cbegin(independent_set),
                    std::cend(independent_set),
