@@ -35,20 +35,18 @@ auto GraphContractor::contractGraph()
         auto independent_set = constructIndependentSet();
 
         fmt::print("calculate contractions...\n");
-        auto [shortcuts, useless, nodes] =
+        auto [shortcuts, nodes] =
             getBestContractions(std::move(independent_set));
 
         fmt::print("rebuild graph...\n");
-        graph_.rebuild(shortcuts, useless, nodes, current_level);
-
-        std::move(std::begin(useless),
-                  std::end(useless),
-                  std::back_inserter(deleted_edges_));
+        graph_.rebuild(shortcuts, nodes, current_level);
 
         fmt::print("done with level {}\n", current_level);
     }
 
+    fmt::print("REEEEEE: {}\n", deleted_edges_.size());
     graph_.addEdges(std::move(deleted_edges_));
+    deleted_edges_.clear();
 }
 
 auto GraphContractor::getGraph()
@@ -140,33 +138,14 @@ auto GraphContractor::getDegreeOf(NodeId node) const
 
 auto GraphContractor::contract(NodeId node) const
     -> std::pair<std::vector<std::pair<NodeId, Edge>>,
-                 std::vector<std::pair<NodeId, Edge>>>
+                 int>
 {
     MultiTargetDijkstra dijkstra{graph_};
 
     auto source_edges = graph_.getBackwardEdgesOf(node);
     auto target_edges = graph_.getForwardEdgesOf(node);
 
-    std::vector<std::pair<NodeId, Edge>> unnecessary;
     std::vector<std::pair<NodeId, Edge>> shortcuts;
-
-    unnecessary.reserve(source_edges.size() + target_edges.size());
-
-    std::transform(std::cbegin(source_edges),
-                   std::cend(source_edges),
-                   std::back_inserter(unnecessary),
-                   [node](const auto& backwards_edge) {
-                       auto source = backwards_edge.getDestination();
-                       Edge to_node{backwards_edge.getCost(), node};
-                       return std::pair{source, to_node};
-                   });
-
-    std::transform(std::cbegin(target_edges),
-                   std::cend(target_edges),
-                   std::back_inserter(unnecessary),
-                   [node](auto edge) {
-                       return std::pair{node, edge};
-                   });
 
     for(auto source_edge : source_edges) {
         auto source = source_edge.getDestination();
@@ -182,6 +161,7 @@ auto GraphContractor::contract(NodeId node) const
             auto shortest_distance =
                 dijkstra.shortestDistanceForContracion(source,
                                                        target,
+                                                       node,
                                                        distance_over_node);
 
 
@@ -194,31 +174,29 @@ auto GraphContractor::contract(NodeId node) const
         dijkstra.cleanup();
     }
 
-    return {unnecessary,
-            shortcuts};
+    auto edge_diff = shortcuts.size()
+        - (source_edges.size() + target_edges.size());
+
+    return {shortcuts, edge_diff};
 }
 
 auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
-    -> std::tuple<
-        std::vector<std::pair<NodeId, // source
-                              Edge>>, //edges to delete
-        std::vector<std::pair<NodeId, //source
-                              Edge>>,
-        std::vector<NodeId>> //edges to add
+    -> std::pair<
+        std::vector<std::pair<NodeId, Edge>>, // shortcuts
+        std::vector<NodeId>> //contracted nodes
 {
     // auto result_vec = transform_par(std::cbegin(independent_set),
     //                                 std::cend(independent_set),
     //                                 [this](auto node) {
     //                                     return contract(node);
     //                                 });
+
     using ContractionInfo =
-        std::pair<std::vector<std::pair<NodeId, // source
-                                        Edge>>, //edges to delete
-                  std::vector<std::pair<NodeId, //source
-                                        Edge>>>; //shortcuts
+        std::pair<std::vector<std::pair<NodeId, //source
+                                        Edge>>,
+                  int>; //shortcuts
 
     std::vector<ContractionInfo> result_vec;
-    result_vec.reserve(independent_set.size());
     std::transform(std::cbegin(independent_set),
                    std::cend(independent_set),
                    std::back_inserter(result_vec),
@@ -231,43 +209,61 @@ auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
                         std::cend(result_vec),
                         0.,
                         [](auto current, const auto& next) {
-                            auto edgediff = static_cast<double>(next.second.size())
-                                - static_cast<double>(next.first.size());
-                            return current + edgediff;
+                            return current + next.second;
                         });
 
-    auto average = sum / static_cast<double>(result_vec.size());
+
+    auto average = static_cast<double>(sum)
+        / static_cast<double>(result_vec.size());
+
+    fmt::print("AVERAGE: {}\n", average);
 
     std::vector<std::pair<NodeId,
                           Edge>>
         shortcuts;
-    std::vector<std::pair<NodeId,
-                          Edge>>
-        useless_edges;
 
     std::vector<NodeId> contracted_nodes;
 
     int counter{0};
-    for(auto [to_delete, to_add] : result_vec) {
+    for(auto& [shortcut, edgediff] : result_vec) {
         auto current_node = independent_set[counter++];
 
-        auto edgediff = static_cast<double>(to_add.size())
-            - static_cast<double>(to_delete.size());
-
         if(edgediff <= average) {
-            std::move(std::begin(to_add),
-                      std::end(to_add),
+            std::move(std::begin(shortcut),
+                      std::end(shortcut),
                       std::back_inserter(shortcuts));
-
-            std::move(std::begin(to_delete),
-                      std::end(to_delete),
-                      std::back_inserter(useless_edges));
 
             contracted_nodes.emplace_back(current_node);
         }
     }
 
+    std::sort(std::begin(contracted_nodes),
+              std::end(contracted_nodes));
+
+    for(auto node : contracted_nodes) {
+        auto source_edges = graph_.getForwardEdgesOf(node);
+        auto target_edges = graph_.getBackwardEdgesOf(node);
+
+        std::transform(std::cbegin(source_edges),
+                       std::end(source_edges),
+                       std::back_inserter(deleted_edges_),
+                       [&](auto edge) {
+                           return std::pair{node, std::move(edge)};
+                       });
+
+        std::transform(std::cbegin(target_edges),
+                       std::end(target_edges),
+                       std::back_inserter(deleted_edges_),
+                       [&](auto back_edge) {
+                           auto from = back_edge.getDestination();
+                           Edge edge{back_edge.getCost(), node};
+                           return std::pair{from, std::move(edge)};
+                       });
+    }
+
+    fmt::print("contracted: {}\n", contracted_nodes.size());
+    fmt::print("SHORTCUTS: {}\n", shortcuts.size());
+
     return {shortcuts,
-            useless_edges,
             contracted_nodes};
 }

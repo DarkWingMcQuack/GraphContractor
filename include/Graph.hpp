@@ -25,6 +25,9 @@ public:
     auto getNumberOfNodes() const
         -> std::uint_fast32_t;
 
+    auto getNumberOfEdges() const
+        -> std::uint_fast32_t;
+
     auto getLevelOf(const NodeId& node) const
         -> NodeLevel;
 
@@ -32,7 +35,6 @@ public:
         -> void;
 
     auto rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
-                 const std::vector<std::pair<NodeId, Edge>>& needless_edges,
                  const std::vector<NodeId>& contracted_nodes,
                  NodeLevel level)
         -> void;

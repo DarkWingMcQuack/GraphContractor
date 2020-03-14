@@ -148,6 +148,7 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
 
 auto MultiTargetDijkstra::shortestDistanceForContracion(const datastructure::NodeId& source,
                                                         const datastructure::NodeId& target,
+                                                        const datastructure::NodeId& intermediat,
                                                         std::size_t cost_limit)
     -> datastructure::Distance
 {
@@ -167,12 +168,12 @@ auto MultiTargetDijkstra::shortestDistanceForContracion(const datastructure::Nod
         auto [cost_to_current,
               current_node] = queue_.top();
 
-        if(cost_to_current >= cost_limit) {
-            return cost_limit;
-        }
-
         if(current_node == target) {
             return cost_to_current;
+        }
+
+        if(cost_to_current >= cost_limit) {
+            return cost_limit;
         }
 
         queue_.pop();
@@ -185,8 +186,12 @@ auto MultiTargetDijkstra::shortestDistanceForContracion(const datastructure::Nod
 
         //iterate over all neigbours of current_node
         for(auto edge : edges) {
-            auto weight = edge.getCost();
             auto dest = edge.getDestination();
+            if(dest == intermediat) {
+                continue;
+            }
+
+            auto weight = edge.getCost();
             auto new_cost = weight + cost_to_current;
 
             if(new_cost < shortest_distances_[dest]) {

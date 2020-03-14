@@ -44,7 +44,6 @@ auto Graph::setLevelOf(NodeId node, NodeLevel level)
 }
 
 auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
-                    const std::vector<std::pair<NodeId, Edge>>& needless_edges,
                     const std::vector<NodeId>& contracted_nodes,
                     NodeLevel level)
     -> void
@@ -55,14 +54,14 @@ auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
         std::async(std::launch::async,
                    [&] {
                        forward_graph_.rebuild(shortcuts,
-                                              needless_edges);
+                                              contracted_nodes);
                    });
 
     auto backward_fut =
         std::async(std::launch::async,
                    [&] {
                        backward_graph_.rebuildBackward(shortcuts,
-                                                       needless_edges);
+                                                       contracted_nodes);
                    });
 
     auto levels_fut =
@@ -83,32 +82,31 @@ auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
 auto Graph::addEdges(std::vector<std::pair<NodeId, Edge>> new_edges)
     -> void
 {
-    //remove edges which go from a higher or
-    //same node level to a lower or same node level
-    auto remove_iter =
-        std::remove_if(std::begin(new_edges),
+    auto partition_iter =
+        std::partition(std::begin(new_edges),
                        std::end(new_edges),
                        [&](const auto& pair) {
                            const auto& [from, edge] = pair;
                            const auto& to = edge.getDestination();
-                           return node_levels_[from] >= node_levels_[to];
+                           return node_levels_[from] > node_levels_[to];
                        });
-
-    new_edges.erase(remove_iter,
-                    std::end(new_edges));
 
 
 
     auto forward_fut =
         std::async(std::launch::async,
                    [&] {
-                       forward_graph_.rebuild(new_edges, {});
+                       std::vector forward_edges(std::begin(new_edges),
+                                                 partition_iter);
+                       forward_graph_.rebuild(forward_edges, {});
                    });
 
     auto backward_fut =
         std::async(std::launch::async,
                    [&] {
-                       backward_graph_.rebuildBackward(new_edges, {});
+                       std::vector backward_edges(partition_iter,
+                                                  std::end(new_edges));
+                       backward_graph_.rebuildBackward(backward_edges, {});
                    });
 
     forward_fut.get();
@@ -284,6 +282,13 @@ auto Graph::getNumberOfNodes() const
     -> std::uint_fast32_t
 {
     return node_levels_.size();
+}
+
+
+auto Graph::getNumberOfEdges() const
+    -> std::uint_fast32_t
+{
+    return forward_graph_.edges_.size();
 }
 
 

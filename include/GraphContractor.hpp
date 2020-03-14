@@ -33,11 +33,12 @@ private:
         -> std::int64_t;
 
     auto contract(const std::vector<NodeId>& nodes) const
-        -> std::vector<Edge>;
+        -> std::pair<std::vector<std::pair<NodeId, Edge>>,
+                     std::size_t>; //number of deleted edges
 
     auto contract(NodeId node) const
-        -> std::pair<std::vector<std::pair<NodeId, Edge>>, //edges to delete
-                     std::vector<std::pair<NodeId, Edge>>>; //edges to add
+        -> std::pair<std::vector<std::pair<NodeId, Edge>>,
+                     int>; //deleted edges - shortcuts
 
     auto constructIndependentSet() const
         -> std::vector<NodeId>;
@@ -49,12 +50,9 @@ private:
         -> std::int64_t;
 
     auto getBestContractions(std::vector<NodeId> independent_set)
-        -> std::tuple<
-            std::vector<std::pair<NodeId, // source
-                                  Edge>>, //edges to delete
-            std::vector<std::pair<NodeId, //source
-                                  Edge>>,
-            std::vector<NodeId>>;
+        -> std::pair<
+            std::vector<std::pair<NodeId, Edge>>, //shortcuts
+            std::vector<NodeId>>; //contracted nodes
 
 private:
     Graph graph_;

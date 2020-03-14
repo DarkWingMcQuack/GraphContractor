@@ -22,11 +22,11 @@ public:
         -> tcb::span<const Edge>;
 
     auto rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
-                 const std::vector<std::pair<NodeId, Edge>>& needless_edges)
+                 const std::vector<NodeId>& contracted)
         -> void;
 
     auto rebuildBackward(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
-                         const std::vector<std::pair<NodeId, Edge>>& needless_edges)
+                         const std::vector<NodeId>& contracted)
         -> void;
 
 private:
@@ -34,6 +34,7 @@ private:
         -> tcb::span<Edge>;
 
 private:
+    friend class Graph;
     /*
 	* offset_array points into edge_ids
 	* edge_ids then points into edges to get the properties

@@ -96,16 +96,27 @@ void transform_if(InputIt first, InputIt last, OutputIt dest, Pred pred, Fct tra
 }
 } // namespace
 
+
 auto UnidirectionGraph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
-                                const std::vector<std::pair<NodeId, Edge>>& needless_edges)
+                                const std::vector<NodeId>& contracted)
     -> void
 {
     std::vector<NodeOffset> offsets(offset_array_.size(), 0);
     std::vector<Edge> edges;
+    edges.reserve(edges_.size());
 
     NodeOffset offset{0};
     for(int i{0}; i < offset_array_.size() - 1; i++) {
         offsets[i] = offset;
+
+        auto is_contracted =
+            std::binary_search(std::cbegin(contracted),
+                               std::cend(contracted),
+                               i);
+
+        if(is_contracted) {
+            continue;
+        }
 
         //add all shortcuts of node i
         transform_if(
@@ -120,22 +131,18 @@ auto UnidirectionGraph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shor
                 return shortcut.second;
             });
 
+
         //add all edges which were not replaced by a shortcut
         auto known_edges = getEdgesOf(i);
         std::copy_if(std::begin(known_edges),
                      std::end(known_edges),
                      std::back_inserter(edges),
                      [&](const auto& known_edge) {
-                         return !std::any_of(std::cbegin(needless_edges),
-                                             std::cend(needless_edges),
-                                             [&](const auto& pair) {
-                                                 const auto& [node, needless_edge] = pair;
-                                                 return node == i
-                                                     && known_edge.getCost()
-                                                     == needless_edge.getCost()
-                                                     && known_edge.getDestination()
-                                                     == needless_edge.getDestination();
-                                             });
+                         const auto& target = known_edge.getDestination();
+
+                         return !std::binary_search(std::cbegin(contracted),
+                                                    std::cend(contracted),
+                                                    target);
                      });
 
         offset = edges.size();
@@ -147,9 +154,8 @@ auto UnidirectionGraph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shor
     offset_array_ = std::move(offsets);
 }
 
-
 auto UnidirectionGraph::rebuildBackward(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
-                                        const std::vector<std::pair<NodeId, Edge>>& needless_edges)
+                                        const std::vector<NodeId>& contracted)
     -> void
 {
     std::vector<NodeOffset> offsets(offset_array_.size(), 0);
@@ -158,6 +164,15 @@ auto UnidirectionGraph::rebuildBackward(const std::vector<std::pair<NodeId, Edge
     NodeOffset offset{0};
     for(int i{0}; i < offset_array_.size() - 1; i++) {
         offsets[i] = offset;
+
+        auto is_contracted =
+            std::binary_search(std::cbegin(contracted),
+                               std::cend(contracted),
+                               i);
+
+        if(is_contracted) {
+            continue;
+        }
 
         //add all shortcuts of node i
         transform_if(
@@ -180,15 +195,11 @@ auto UnidirectionGraph::rebuildBackward(const std::vector<std::pair<NodeId, Edge
                      std::end(known_edges),
                      std::back_inserter(edges),
                      [&](const auto& known_edge) {
-                         //check if the edge is somewhere
-                         //in the set of edges which is not needed
-                         return !std::any_of(std::cbegin(needless_edges),
-                                             std::cend(needless_edges),
-                                             [&](const auto& pair) {
-                                                 const auto& [node, needless_edge] = pair;
-                                                 return node == known_edge.getDestination()
-                                                     && i == needless_edge.getDestination();
-                                             });
+                         const auto& target = known_edge.getDestination();
+
+                         return !std::binary_search(std::cbegin(contracted),
+                                                    std::cend(contracted),
+                                                    target);
                      });
 
         offset = edges.size();
