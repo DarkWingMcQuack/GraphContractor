@@ -19,7 +19,7 @@ public:
     auto contractGraph()
         -> void;
 
-    auto getGraph()
+    auto getFullGraph()
         -> Graph&;
 
 private:
@@ -57,9 +57,11 @@ private:
             std::vector<NodeId>>;
 
 private:
-    Graph graph_;
+    Graph contraction_graph_;
+    Graph full_graph_;
     NodeLevel current_level{0};
     std::int64_t already_contracted{0};
+    std::vector<std::vector<Edge>> output_graph_;
 };
 
 } // namespace datastructure

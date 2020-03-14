@@ -39,7 +39,8 @@ add_executable(GraphContractor main.cpp)
 
 target_sources(GraphContractor
   PUBLIC
-  # ${CMAKE_CURRENT_LIST_DIR}/include/span.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/span.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/Timer.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/Graph.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/UnidirectionGraph.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/GraphContractor.hpp

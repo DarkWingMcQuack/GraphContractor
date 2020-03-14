@@ -20,7 +20,8 @@ using pathfinding::MultiTargetDijkstra;
 
 
 GraphContractor::GraphContractor(Graph graph)
-    : graph_(std::move(graph)) {}
+    : contraction_graph_(graph),
+      full_graph_(std::move(graph)) {}
 
 auto GraphContractor::contractGraph()
     -> void
@@ -36,23 +37,24 @@ auto GraphContractor::contractGraph()
             getBestContractions(std::move(independent_set));
 
         fmt::print("rebuild graph...\n");
-        graph_.rebuild(shortcuts, useless, nodes, current_level);
+        contraction_graph_.rebuild(shortcuts, useless, nodes, current_level);
+        full_graph_.rebuild(shortcuts, {}, nodes, current_level);
 
         fmt::print("done with level {}\n", current_level);
     }
 }
 
-auto GraphContractor::getGraph()
+auto GraphContractor::getFullGraph()
     -> Graph&
 {
-    return graph_;
+    return full_graph_;
 }
 
 
 auto GraphContractor::graphFullContracted() const
     -> bool
 {
-    const auto& levels = graph_.getLevels();
+    const auto& levels = contraction_graph_.getLevels();
     return std::all_of(std::cbegin(levels),
                        std::cend(levels),
                        [](auto level) {
@@ -64,13 +66,13 @@ auto GraphContractor::graphFullContracted() const
 auto GraphContractor::numberOfIngoingEdges(NodeId node) const
     -> std::int64_t
 {
-    return graph_.getBackwardEdgesOf(node).size();
+    return contraction_graph_.getBackwardEdgesOf(node).size();
 }
 
 auto GraphContractor::numberOfOutgoingEdges(NodeId node) const
     -> std::int64_t
 {
-    return graph_.getForwardEdgesOf(node).size();
+    return contraction_graph_.getForwardEdgesOf(node).size();
 }
 
 auto GraphContractor::constructIndependentSet() const
@@ -81,12 +83,12 @@ auto GraphContractor::constructIndependentSet() const
     std::vector<NodeId> independent_set;
 
     for(auto node : nodes) {
-        if(!visited[node] && graph_.getLevelOf(node) == 0) {
+        if(!visited[node] && contraction_graph_.getLevelOf(node) == 0) {
             visited[node] = true;
             independent_set.emplace_back(node);
 
-            auto forward_edges = graph_.getForwardEdgesOf(node);
-            auto backward_edges = graph_.getBackwardEdgesOf(node);
+            auto forward_edges = contraction_graph_.getForwardEdgesOf(node);
+            auto backward_edges = contraction_graph_.getBackwardEdgesOf(node);
 
             for(const auto& edge : forward_edges) {
                 auto target = edge.getDestination();
@@ -106,7 +108,7 @@ auto GraphContractor::constructIndependentSet() const
 auto GraphContractor::getEdgeDegreeSortedNodes() const
     -> std::vector<NodeId>
 {
-    std::vector<NodeId> nodes(graph_.getNumberOfNodes());
+    std::vector<NodeId> nodes(contraction_graph_.getNumberOfNodes());
     std::iota(std::begin(nodes),
               std::end(nodes),
               0);
@@ -123,8 +125,8 @@ auto GraphContractor::getEdgeDegreeSortedNodes() const
 auto GraphContractor::getDegreeOf(NodeId node) const
     -> std::int64_t
 {
-    auto forward = graph_.getForwardEdgesOf(node).size();
-    auto backward = graph_.getBackwardEdgesOf(node).size();
+    auto forward = contraction_graph_.getForwardEdgesOf(node).size();
+    auto backward = contraction_graph_.getBackwardEdgesOf(node).size();
 
     return forward + backward;
 }
@@ -133,10 +135,10 @@ auto GraphContractor::contract(NodeId node) const
     -> std::pair<std::vector<std::pair<NodeId, Edge>>,
                  std::vector<std::pair<NodeId, Edge>>>
 {
-    MultiTargetDijkstra dijkstra{graph_};
+    MultiTargetDijkstra dijkstra{contraction_graph_};
 
-    auto source_edges = graph_.getBackwardEdgesOf(node);
-    auto target_edges = graph_.getForwardEdgesOf(node);
+    auto source_edges = contraction_graph_.getBackwardEdgesOf(node);
+    auto target_edges = contraction_graph_.getForwardEdgesOf(node);
 
     std::vector<std::pair<NodeId, Edge>> unnecessary;
     std::vector<std::pair<NodeId, Edge>> shortcuts;
