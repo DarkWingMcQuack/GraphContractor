@@ -29,6 +29,7 @@ public:
                          const std::vector<NodeId>& contracted)
         -> void;
 
+
 private:
     auto getEdgesOf(const NodeId& node)
         -> tcb::span<Edge>;

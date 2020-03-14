@@ -48,8 +48,6 @@ auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
                     NodeLevel level)
     -> void
 {
-    fmt::print("rebuild graph");
-
     auto forward_fut =
         std::async(std::launch::async,
                    [&] {
@@ -88,7 +86,7 @@ auto Graph::addEdges(std::vector<std::pair<NodeId, Edge>> new_edges)
                        [&](const auto& pair) {
                            const auto& [from, edge] = pair;
                            const auto& to = edge.getDestination();
-                           return node_levels_[from] > node_levels_[to];
+                           return node_levels_[from] < node_levels_[to];
                        });
 
 
@@ -296,4 +294,38 @@ auto Graph::getLevels() const
     -> const std::vector<NodeLevel>&
 {
     return node_levels_;
+}
+
+auto Graph::toString() const
+    -> std::string
+{
+    std::string ret = "Upwards: \n";
+    for(int node{0}; node < getNumberOfNodes(); node++) {
+        auto level = getLevelOf(node);
+        ret += +"(" + std::to_string(level) + ")" + std::to_string(node);
+        ret += " -> ";
+
+        auto outgoing = getForwardEdgesOf(node);
+
+        for(auto edge : outgoing) {
+            ret += std::to_string(edge.getDestination()) + ", ";
+        }
+        ret += "\n";
+    }
+
+    ret += "Downwards: \n";
+    for(int node{0}; node < getNumberOfNodes(); node++) {
+        auto level = getLevelOf(node);
+        ret += +"(" + std::to_string(level) + ")" + std::to_string(node);
+        ret += " -> ";
+
+        auto outgoing = getBackwardEdgesOf(node);
+
+        for(auto edge : outgoing) {
+            ret += std::to_string(edge.getDestination()) + ", ";
+        }
+        ret += "\n";
+    }
+
+    return ret;
 }

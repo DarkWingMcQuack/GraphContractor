@@ -19,12 +19,6 @@ public:
                                 const datastructure::NodeId& target)
         -> datastructure::Distance;
 
-    auto shortestDistanceForContracion(const datastructure::NodeId& source,
-                                       const datastructure::NodeId& target,
-                                       const datastructure::NodeId& intermediat,
-                                       std::size_t cost_limit)
-        -> datastructure::Distance;
-
     auto cleanup()
         -> void;
 

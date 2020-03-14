@@ -1,5 +1,5 @@
-#include "Graph.hpp"
-#include "MultiTargetDijkstra.hpp"
+#include <Graph.hpp>
+#include <MultiTargetDijkstra.hpp>
 #include <GraphContractor.hpp>
 #include <GraphEssentials.hpp>
 #include <ParallelTransform.hpp>
@@ -159,13 +159,11 @@ auto GraphContractor::contract(NodeId node) const
                 source_node_cost + node_target_cost;
 
             auto shortest_distance =
-                dijkstra.shortestDistanceForContracion(source,
-                                                       target,
-                                                       node,
-                                                       distance_over_node);
+                dijkstra.shortestDistanceFromTo(source,
+                                                target);
 
 
-            if(shortest_distance == distance_over_node) {
+            if(shortest_distance >= distance_over_node) {
                 Edge shortcut{shortest_distance, target};
                 shortcuts.emplace_back(source, shortcut);
             }
@@ -173,6 +171,23 @@ auto GraphContractor::contract(NodeId node) const
 
         dijkstra.cleanup();
     }
+
+    fmt::print("contracted {}\n", node);
+    fmt::print("deltete edges: \n");
+    for(auto i : source_edges) {
+        fmt::print("{} -> {}\n", i.getDestination(), node);
+    }
+
+    for(auto i : target_edges) {
+        fmt::print("{} -> {}\n", node, i.getDestination());
+    }
+
+	fmt::print("added shortcuts: \n");
+	for(auto[from, edge]: shortcuts){
+	  fmt::print("{} -> {}\n", from, edge.getDestination());
+	}
+
+	
 
     auto edge_diff = shortcuts.size()
         - (source_edges.size() + target_edges.size());
@@ -185,24 +200,11 @@ auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
         std::vector<std::pair<NodeId, Edge>>, // shortcuts
         std::vector<NodeId>> //contracted nodes
 {
-    // auto result_vec = transform_par(std::cbegin(independent_set),
-    //                                 std::cend(independent_set),
-    //                                 [this](auto node) {
-    //                                     return contract(node);
-    //                                 });
-
-    using ContractionInfo =
-        std::pair<std::vector<std::pair<NodeId, //source
-                                        Edge>>,
-                  int>; //shortcuts
-
-    std::vector<ContractionInfo> result_vec;
-    std::transform(std::cbegin(independent_set),
-                   std::cend(independent_set),
-                   std::back_inserter(result_vec),
-                   [this](auto node) {
-                       return contract(node);
-                   });
+    auto result_vec = transform_par(std::cbegin(independent_set),
+                                    std::cend(independent_set),
+                                    [this](auto node) {
+                                        return contract(node);
+                                    });
 
     auto sum =
         std::accumulate(std::cbegin(result_vec),

@@ -115,6 +115,7 @@ auto UnidirectionGraph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shor
                                i);
 
         if(is_contracted) {
+		  fmt::print("JUMP OVER {}\n", i);
             continue;
         }
 
