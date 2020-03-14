@@ -37,6 +37,9 @@ public:
                  NodeLevel level)
         -> void;
 
+    auto addEdges(const std::vector<std::pair<NodeId, Edge>>& new_edges)
+        -> void;
+
     auto getLevels() const
         -> const std::vector<NodeLevel>&;
 

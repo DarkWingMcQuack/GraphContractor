@@ -37,7 +37,6 @@ auto GraphContractor::contractGraph()
 
         fmt::print("rebuild graph...\n");
         graph_.rebuild(shortcuts, useless, nodes, current_level);
-        // full_graph_.rebuild(shortcuts, {}, nodes, current_level);
 
         std::move(std::begin(useless),
                   std::end(useless),
@@ -46,10 +45,7 @@ auto GraphContractor::contractGraph()
         fmt::print("done with level {}\n", current_level);
     }
 
-    graph_.rebuild(deleted_edges_,
-                               {},
-                               {},
-                               -1);
+    graph_.addEdges(deleted_edges_);
 }
 
 auto GraphContractor::getGraph()

@@ -70,6 +70,14 @@ auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
 }
 
 
+auto Graph::addEdges(const std::vector<std::pair<NodeId, Edge>>& new_edges)
+    -> void
+{
+    forward_graph_.rebuild(new_edges, {});
+    backward_graph_.rebuildBackward(new_edges, {});
+}
+
+
 auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     -> std::optional<Graph>
 {
