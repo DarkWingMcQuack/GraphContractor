@@ -1,5 +1,7 @@
 build/
 bin/
+data/
+.clangd/
 include/parser/generated/*
 .dir-locals.el
 external/
