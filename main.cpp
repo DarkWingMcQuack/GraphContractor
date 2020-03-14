@@ -26,7 +26,7 @@ auto main() -> int
     fmt::print("contracting graph ...\n");
     contractor.contractGraph();
     fmt::print("graph contracted in: {}s\n", t.elapsed());
-    auto own_ch_graph = std::move(contractor.getFullGraph());
+    auto own_ch_graph = std::move(contractor.getGraph());
 
 
     NodeId from;
