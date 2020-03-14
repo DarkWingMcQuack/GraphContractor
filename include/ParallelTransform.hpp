@@ -13,7 +13,8 @@ auto transform_par(Iter begin, Iter end, UnaryOperation&& op, std::size_t origin
 
     auto size = std::distance(begin, end);
 
-    if(size <= (original_size / std::thread::hardware_concurrency())) {
+    if(original_size <= std::thread::hardware_concurrency()
+       || size <= (original_size / std::thread::hardware_concurrency())) {
         VectorType ret_vec;
         std::transform(begin,
                        end,
