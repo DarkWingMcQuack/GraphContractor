@@ -131,7 +131,10 @@ auto UnidirectionGraph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shor
                                              [&](const auto& pair) {
                                                  const auto& [node, needless_edge] = pair;
                                                  return node == i
-                                                     && known_edge == needless_edge;
+                                                     && known_edge.getCost()
+                                                     == needless_edge.getCost()
+                                                     && known_edge.getDestination()
+                                                     == needless_edge.getDestination();
                                              });
                      });
 
