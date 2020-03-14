@@ -97,8 +97,22 @@ auto Graph::addEdges(std::vector<std::pair<NodeId, Edge>> new_edges)
     new_edges.erase(remove_iter,
                     std::end(new_edges));
 
-    forward_graph_.rebuild(new_edges, {});
-    backward_graph_.rebuildBackward(new_edges, {});
+
+
+    auto forward_fut =
+        std::async(std::launch::async,
+                   [&] {
+                       forward_graph_.rebuild(new_edges, {});
+                   });
+
+    auto backward_fut =
+        std::async(std::launch::async,
+                   [&] {
+                       backward_graph_.rebuildBackward(new_edges, {});
+                   });
+
+    forward_fut.get();
+    backward_fut.get();
 }
 
 
