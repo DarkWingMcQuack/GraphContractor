@@ -146,6 +146,60 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const datastructure::NodeId& so
 }
 
 
+auto MultiTargetDijkstra::shortestDistanceForContracion(const datastructure::NodeId& source,
+                                                        const datastructure::NodeId& target,
+                                                        std::size_t cost_limit)
+    -> datastructure::Distance
+{
+    if(source != last_source_) {
+        last_source_ = source;
+        cleanup();
+        queue_.emplace(0, source);
+        shortest_distances_[source] = 0;
+        touched_nodes_.push_back(source);
+    } else if(settled_[target]) {
+        return shortest_distances_[target];
+    }
+
+    while(!queue_.empty()) {
+
+        //get next element from queue
+        auto [cost_to_current,
+              current_node] = queue_.top();
+
+        if(current_node == target) {
+            return cost_to_current;
+        }
+
+        queue_.pop();
+
+        //add the node to settled nodes
+        settled_[current_node] = true;
+
+        //get all edges
+        auto edges = graph_.getForwardEdgesOf(current_node);
+
+        //iterate over all neigbours of current_node
+        for(auto edge : edges) {
+            auto weight = edge.getCost();
+            auto dest = edge.getDestination();
+            auto new_cost = weight + cost_to_current;
+
+            if(new_cost > cost_limit) {
+                continue;
+            }
+
+            if(new_cost < shortest_distances_[dest]) {
+                queue_.emplace(new_cost, dest);
+                shortest_distances_[dest] = new_cost;
+                touched_nodes_.push_back(dest);
+            }
+        }
+    }
+
+    return shortest_distances_[target];
+}
+
 auto MultiTargetDijkstra::cleanup()
     -> void
 {
