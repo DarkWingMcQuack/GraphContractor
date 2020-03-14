@@ -2,6 +2,7 @@
 #include "MultiTargetDijkstra.hpp"
 #include <GraphContractor.hpp>
 #include <GraphEssentials.hpp>
+#include <ParallelTransform.hpp>
 #include <UnidirectionGraph.hpp>
 #include <algorithm>
 #include <fmt/core.h>
@@ -9,11 +10,13 @@
 #include <future>
 #include <iterator>
 #include <numeric>
+#include <parallel/algorithm>
 #include <span.hpp>
 #include <vector>
 
 using datastructure::Edge;
 using datastructure::NodeId;
+using algorithm::transform_par;
 using datastructure::UnidirectionGraph;
 using datastructure::GraphContractor;
 using pathfinding::MultiTargetDijkstra;
@@ -147,6 +150,9 @@ auto GraphContractor::contract(NodeId node) const
     std::vector<std::pair<NodeId, Edge>> unnecessary;
     std::vector<std::pair<NodeId, Edge>> shortcuts;
 
+	unnecessary.reserve(source_edges.size());
+	shortcuts.reserve(target_edges.size());
+
     std::transform(std::cbegin(source_edges),
                    std::cend(source_edges),
                    std::back_inserter(unnecessary),
@@ -187,20 +193,6 @@ auto GraphContractor::contract(NodeId node) const
             shortcuts};
 }
 
-namespace {
-//the stl does not provide transform_if
-template<class InputIt, class OutputIt, class Pred, class Fct>
-void transform_if(InputIt first, InputIt last, OutputIt dest, Pred pred, Fct transform)
-{
-    while(first != last) {
-        if(pred(*first))
-            *dest++ = transform(*first);
-
-        ++first;
-    }
-}
-} // namespace
-
 auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
     -> std::tuple<
         std::vector<std::pair<NodeId, // source
@@ -209,19 +201,11 @@ auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
                               Edge>>,
         std::vector<NodeId>> //edges to add
 {
-    using ContractionInfo =
-        std::pair<std::vector<std::pair<NodeId, // source
-                                        Edge>>, //edges to delete
-                  std::vector<std::pair<NodeId, //source
-                                        Edge>>>; //shortcuts
-
-    std::vector<ContractionInfo> result_vec;
-    std::transform(std::cbegin(independent_set),
-                   std::cend(independent_set),
-                   std::back_inserter(result_vec),
-                   [this](auto node) {
-                       return contract(node);
-                   });
+    auto result_vec = transform_par(std::cbegin(independent_set),
+                                    std::cend(independent_set),
+                                    [this](auto node) {
+                                        return contract(node);
+                                    });
 
     auto sum =
         std::accumulate(std::cbegin(result_vec),
