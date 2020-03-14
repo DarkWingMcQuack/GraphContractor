@@ -167,6 +167,10 @@ auto MultiTargetDijkstra::shortestDistanceForContracion(const datastructure::Nod
         auto [cost_to_current,
               current_node] = queue_.top();
 
+        if(cost_to_current >= cost_limit) {
+            return cost_limit;
+        }
+
         if(current_node == target) {
             return cost_to_current;
         }
@@ -184,10 +188,6 @@ auto MultiTargetDijkstra::shortestDistanceForContracion(const datastructure::Nod
             auto weight = edge.getCost();
             auto dest = edge.getDestination();
             auto new_cost = weight + cost_to_current;
-
-            if(new_cost > cost_limit) {
-                continue;
-            }
 
             if(new_cost < shortest_distances_[dest]) {
                 queue_.emplace(new_cost, dest);
