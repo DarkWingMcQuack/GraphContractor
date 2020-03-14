@@ -45,7 +45,7 @@ auto GraphContractor::contractGraph()
         fmt::print("done with level {}\n", current_level);
     }
 
-    graph_.addEdges(deleted_edges_);
+    graph_.addEdges(std::move(deleted_edges_));
 }
 
 auto GraphContractor::getGraph()

@@ -70,9 +70,23 @@ auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
 }
 
 
-auto Graph::addEdges(const std::vector<std::pair<NodeId, Edge>>& new_edges)
+auto Graph::addEdges(std::vector<std::pair<NodeId, Edge>> new_edges)
     -> void
 {
+    //remove edges which go from a higher or
+    //same node level to a lower or same node level
+    auto remove_iter =
+        std::remove_if(std::begin(new_edges),
+                       std::end(new_edges),
+                       [&](const auto& pair) {
+                           const auto& [from, edge] = pair;
+                           const auto& to = edge.getDestination();
+                           return node_levels_[from] >= node_levels_[to];
+                       });
+
+    new_edges.erase(remove_iter,
+                    std::end(new_edges));
+
     forward_graph_.rebuild(new_edges, {});
     backward_graph_.rebuildBackward(new_edges, {});
 }
