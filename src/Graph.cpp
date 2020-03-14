@@ -49,24 +49,34 @@ auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
                     NodeLevel level)
     -> void
 {
-    // auto forward_fut = std::async([&]() {
-    fmt::print("rebuild forward\n");
-    forward_graph_.rebuild(shortcuts,
-                           needless_edges);
-    // });
+    fmt::print("rebuild graph");
 
-    fmt::print("rebuild backward\n");
-    // auto backward_fut = std::async([&]() {
-    backward_graph_.rebuildBackward(shortcuts,
-                                    needless_edges);
-    // });
+    auto forward_fut =
+        std::async(std::launch::async,
+                   [&] {
+                       forward_graph_.rebuild(shortcuts,
+                                              needless_edges);
+                   });
 
-    // forward_fut.get();
-    // backward_fut.get();
+    auto backward_fut =
+        std::async(std::launch::async,
+                   [&] {
+                       backward_graph_.rebuildBackward(shortcuts,
+                                                       needless_edges);
+                   });
 
-    for(auto node : contracted_nodes) {
-        node_levels_[node] = level;
-    }
+    auto levels_fut =
+        std::async(std::launch::async,
+                   [&] {
+                       for(auto node : contracted_nodes) {
+                           node_levels_[node] = level;
+                       }
+                   });
+
+
+    forward_fut.get();
+    backward_fut.get();
+    levels_fut.get();
 }
 
 
