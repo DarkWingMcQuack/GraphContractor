@@ -16,6 +16,15 @@ public:
     Edge(Distance cost,
          NodeId destination);
 
+    Edge(Edge&&) = default;
+    Edge(const Edge&) = default;
+
+    auto operator=(const Edge&)
+        -> Edge& = default;
+
+    auto operator=(Edge &&)
+        -> Edge& = default;
+
     auto getCost() const
         -> Distance;
 
