@@ -8,6 +8,7 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 #include <future>
+#include <iostream>
 #include <iterator>
 #include <numeric>
 #include <parallel/algorithm>
@@ -29,27 +30,21 @@ GraphContractor::GraphContractor(Graph graph)
 auto GraphContractor::contractGraph()
     -> void
 {
+    fmt::print("contracting graph ...\n");
     while(!graphFullContracted()) {
         current_level++;
 
-        fmt::print("build independent set...\n");
         auto independent_set = constructIndependentSet();
 
-        fmt::print("calculate contractions for {} nodes...\n",
-                   independent_set.size());
         auto [shortcuts, nodes] =
             getBestContractions(std::move(independent_set));
 
-        fmt::print("rebuild graph...\n");
         graph_.rebuild(shortcuts, nodes, current_level);
-
-        fmt::print("done with level {}\n", current_level);
     }
-
-    fmt::print("Rebuilding graph");
 
     graph_.addEdges(std::move(deleted_edges_));
     deleted_edges_.clear();
+    fmt::print("graph contracted with {} levels\n", current_level);
 }
 
 auto GraphContractor::getGraph()

@@ -62,18 +62,13 @@ auto Graph::rebuild(const std::unordered_map<NodeId, std::vector<Edge>>& shortcu
                                                        contracted_nodes);
                    });
 
-    auto levels_fut =
-        std::async(std::launch::async,
-                   [&] {
-                       for(auto node : contracted_nodes) {
-                           node_levels_[node] = level;
-                       }
-                   });
+    for(auto node : contracted_nodes) {
+        node_levels_[node] = level;
+    }
 
 
     forward_fut.get();
     backward_fut.get();
-    levels_fut.get();
 }
 
 

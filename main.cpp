@@ -14,25 +14,22 @@ using namespace pathfinding;
 auto main() -> int
 {
     Timer t;
-    fmt::print("read CH Graph...\n");
-    auto ch_graph = readFromAllreadyContractedFile("/home/lukas/Projects/GraphContractor/data/stgtregbz_ch.fmi").value();
+    // fmt::print("read CH Graph...\n");
+    // auto ch_graph = readFromAllreadyContractedFile("/home/lukas/Projects/GraphContractor/data/stgtregbz_ch.fmi").value();
     fmt::print("read non-CH Graph...\n");
-    auto graph = readFromNonContractedFile("/home/lukas/Projects/GraphContractor/data/stgtregbz.fmi").value();
+    auto graph = readFromNonContractedFile("/home/lukas/Projects/GraphContractor/data/germany.fmi").value();
     fmt::print("graph build in: {}s\n", t.elapsed());
 
     GraphContractor contractor{graph};
 
     t.reset();
-    fmt::print("contracting graph ...\n");
     contractor.contractGraph();
     fmt::print("graph contracted in: {}s\n", t.elapsed());
     auto own_ch_graph = std::move(contractor.getGraph());
 
-    // fmt::print("\n\nGRAPH:\n\n{}\n", own_ch_graph.toString());
-
     NodeId from;
     NodeId to;
-    CHDijkstra ch_pathfinder{ch_graph};
+    // CHDijkstra ch_pathfinder{ch_graph};
     CHDijkstra own_ch_pathfinder{own_ch_graph};
     MultiTargetDijkstra pathfinder{graph};
     while(true) {
@@ -43,21 +40,21 @@ auto main() -> int
         std::cin >> to;
 
 
-        t.reset();
-        auto ch_distance = ch_pathfinder.shortestDistanceFromTo(from,
-        to);
+        // t.reset();
+        // auto ch_distance = ch_pathfinder.shortestDistanceFromTo(from,
+        //                                                         to);
 
 
-        auto ch_time = t.elapsed();
-        fmt::print("ch_distance: {}s\n", ch_distance);
-        fmt::print("calculated ch_distance in: {}s\n", ch_time);
+        // auto ch_time = t.elapsed();
+        // fmt::print("CH distance: {}\n", ch_distance);
+        // fmt::print("calculated CH distance in: {}s\n", ch_time);
 
         t.reset();
         auto own_ch_distance = own_ch_pathfinder.shortestDistanceFromTo(from,
                                                                         to);
         auto own_ch_time = t.elapsed();
-        fmt::print("own_ch_distance:\t{}\n", own_ch_distance);
-        fmt::print("calculated Own Ch distance in: {}s\n", own_ch_time);
+        fmt::print("OWN CH distance:\t{}\n", own_ch_distance);
+        fmt::print("calculated OWN CH distance in: {}s\n", own_ch_time);
 
 
         t.reset();
