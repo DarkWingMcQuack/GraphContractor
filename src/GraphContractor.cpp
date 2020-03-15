@@ -45,15 +45,6 @@ auto GraphContractor::contractGraph()
         fmt::print("done with level {}\n", current_level);
     }
 
-
-    fmt::print("REEEEEEEEEEEEE: {}\n",
-               std::accumulate(std::begin(deleted_edges_),
-                               std::end(deleted_edges_),
-                               0,
-                               [](auto current, auto next) {
-                                   return current + next.second.size();
-                               }));
-
     graph_.addEdges(std::move(deleted_edges_));
     deleted_edges_.clear();
 }
@@ -154,7 +145,7 @@ auto GraphContractor::contract(NodeId node)
 
     std::unordered_map<NodeId, std::vector<Edge>> shortcuts;
 
-    std::size_t number_of_shortcuts{0};
+    int number_of_shortcuts{0};
 
     for(auto source_edge : source_edges) {
         dijkstra_.cleanup();
@@ -164,6 +155,9 @@ auto GraphContractor::contract(NodeId node)
 
         for(auto target_edge : target_edges) {
             auto target = target_edge.getDestination();
+            if(target == source) {
+                continue;
+            }
             auto node_target_cost = target_edge.getCost();
 
             auto distance_over_node =
@@ -173,12 +167,7 @@ auto GraphContractor::contract(NodeId node)
                 dijkstra_.shortestDistanceFromTo(source,
                                                  target);
 
-            // fmt::print("shortest: {}\n", shortest_distance);
-            // fmt::print("over node: {}\n", distance_over_node);
-
             if(shortest_distance >= distance_over_node) {
-                // Edge shortcut{distance_over_node, target};
-                // shortcuts.emplace_back(source, shortcut);
                 shortcuts[source].emplace_back(distance_over_node,
                                                target);
                 number_of_shortcuts++;
@@ -186,17 +175,10 @@ auto GraphContractor::contract(NodeId node)
         }
     }
 
-    fmt::print("REEEEEEEEEEEEE: {}\n",
-               std::accumulate(std::begin(shortcuts),
-                               std::end(shortcuts),
-                               0,
-                               [](auto current, auto next) {
-                                   return current + next.second.size();
-                               }));
-
-
     auto edge_diff = number_of_shortcuts
-        - (source_edges.size() + target_edges.size());
+        - static_cast<int>((source_edges.size()
+                            + target_edges.size()));
+
 
     return {shortcuts, edge_diff};
 }
@@ -238,13 +220,19 @@ auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
     std::vector<NodeId> contracted_nodes;
 
     int counter{0};
-    for(auto& [shortcut, edgediff] : result_vec) {
+    int shortcuts_added{0};
+    for(auto&& [shortcut, edgediff] : result_vec) {
         auto current_node = independent_set[counter++];
 
         if(edgediff <= average) {
-            // shortcuts[current_node] = std::move(shortcut[current_node]);
-            shortcuts.insert({current_node, std::move(shortcut[current_node])});
+            for(auto&& [from, edges] : shortcut) {
+                shortcuts[from]
+                    .insert(std::end(shortcuts[from]),
+                            std::begin(edges),
+                            std::end(edges));
+            }
             contracted_nodes.emplace_back(current_node);
+            shortcuts_added += shortcuts[current_node].size();
         }
     }
 
