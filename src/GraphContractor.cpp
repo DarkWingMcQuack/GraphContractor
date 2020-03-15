@@ -35,7 +35,8 @@ auto GraphContractor::contractGraph()
         fmt::print("build independent set...\n");
         auto independent_set = constructIndependentSet();
 
-        fmt::print("calculate contractions...\n");
+        fmt::print("calculate contractions for {} nodes...\n",
+                   independent_set.size());
         auto [shortcuts, nodes] =
             getBestContractions(std::move(independent_set));
 
@@ -44,6 +45,8 @@ auto GraphContractor::contractGraph()
 
         fmt::print("done with level {}\n", current_level);
     }
+
+    fmt::print("Rebuilding graph");
 
     graph_.addEdges(std::move(deleted_edges_));
     deleted_edges_.clear();
@@ -164,8 +167,10 @@ auto GraphContractor::contract(NodeId node)
                 source_node_cost + node_target_cost;
 
             auto shortest_distance =
-                dijkstra_.shortestDistanceFromTo(source,
-                                                 target);
+                dijkstra_.shortestDistanceForContraction(source,
+                                                         target,
+                                                         node,
+                                                         distance_over_node);
 
             if(shortest_distance >= distance_over_node) {
                 shortcuts[source].emplace_back(distance_over_node,

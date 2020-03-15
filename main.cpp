@@ -14,10 +14,10 @@ using namespace pathfinding;
 auto main() -> int
 {
     Timer t;
-    // fmt::print("read CH Graph...\n");
-    // auto ch_graph = readFromAllreadyContractedFile("/home/lukas/Projects/GraphContractor/data/stgtregbz_ch.fmi").value();
+    fmt::print("read CH Graph...\n");
+    auto ch_graph = readFromAllreadyContractedFile("/home/lukas/Projects/GraphContractor/data/stgtregbz_ch.fmi").value();
     fmt::print("read non-CH Graph...\n");
-    auto graph = readFromNonContractedFile("/home/lukas/Projects/GraphContractor/data/15kSZHK_fmi.txt").value();
+    auto graph = readFromNonContractedFile("/home/lukas/Projects/GraphContractor/data/stgtregbz.fmi").value();
     fmt::print("graph build in: {}s\n", t.elapsed());
 
     GraphContractor contractor{graph};
@@ -32,7 +32,7 @@ auto main() -> int
 
     NodeId from;
     NodeId to;
-    // CHDijkstra ch_pathfinder{ch_graph};
+    CHDijkstra ch_pathfinder{ch_graph};
     CHDijkstra own_ch_pathfinder{own_ch_graph};
     MultiTargetDijkstra pathfinder{graph};
     while(true) {
@@ -43,14 +43,14 @@ auto main() -> int
         std::cin >> to;
 
 
-        // t.reset();
-        // auto ch_distance = ch_pathfinder.shortestDistanceFromTo(from,
-        // to);
+        t.reset();
+        auto ch_distance = ch_pathfinder.shortestDistanceFromTo(from,
+        to);
 
 
-        // auto ch_time = t.elapsed();
-        // fmt::print("ch_distance: {}s\n", ch_distance);
-        // fmt::print("calculated ch_distance in: {}s\n", ch_time);
+        auto ch_time = t.elapsed();
+        fmt::print("ch_distance: {}s\n", ch_distance);
+        fmt::print("calculated ch_distance in: {}s\n", ch_time);
 
         t.reset();
         auto own_ch_distance = own_ch_pathfinder.shortestDistanceFromTo(from,

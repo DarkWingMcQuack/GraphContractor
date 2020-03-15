@@ -108,6 +108,7 @@ auto UnidirectionGraph::rebuild(const std::unordered_map<NodeId, std::vector<Edg
 
     NodeOffset offset{0};
     for(int i{0}; i < offset_array_.size() - 1; i++) {
+        std::vector<Edge> new_edges;
         offsets[i] = offset;
 
         auto is_contracted =
@@ -123,14 +124,14 @@ auto UnidirectionGraph::rebuild(const std::unordered_map<NodeId, std::vector<Edg
         if(map_iter != shortcuts.end()) {
             std::copy(std::begin(map_iter->second),
                       std::end(map_iter->second),
-                      std::back_inserter(edges));
+                      std::back_inserter(new_edges));
         }
 
         //add all edges which were not replaced by a shortcut
         auto known_edges = getEdgesOf(i);
         std::copy_if(std::begin(known_edges),
                      std::end(known_edges),
-                     std::back_inserter(edges),
+                     std::back_inserter(new_edges),
                      [&](const auto& known_edge) {
                          const auto& target = known_edge.getDestination();
 
@@ -138,6 +139,29 @@ auto UnidirectionGraph::rebuild(const std::unordered_map<NodeId, std::vector<Edg
                                                     std::cend(contracted),
                                                     target);
                      });
+
+        std::sort(std::begin(new_edges),
+                  std::end(new_edges),
+                  [](const auto& lhs, const auto& rhs) {
+                      return lhs.getDestination() < rhs.getDestination();
+                  });
+
+        Edge best = new_edges.front();
+        for(int j{0}; j < new_edges.size(); ++j) {
+            auto edge = new_edges[j];
+
+            if(edge.getDestination() != best.getDestination()) {
+                edges.emplace_back(std::move(best));
+                best = edge;
+            } else {
+                if(best.getCost() > edge.getCost()) {
+                    best = edge;
+                }
+            }
+            if(j == new_edges.size() - 1) {
+                edges.emplace_back(std::move(edge));
+            }
+        }
 
         offset = edges.size();
     }
@@ -181,6 +205,8 @@ auto UnidirectionGraph::rebuildBackward(const std::unordered_map<NodeId, std::ve
     for(int i{0}; i < offset_array_.size() - 1; i++) {
         offsets[i] = offset;
 
+        std::vector<Edge> new_edges;
+
         auto is_contracted =
             std::binary_search(std::cbegin(contracted),
                                std::cend(contracted),
@@ -194,14 +220,14 @@ auto UnidirectionGraph::rebuildBackward(const std::unordered_map<NodeId, std::ve
         if(map_iter != switched_edges.end()) {
             std::copy(std::begin(map_iter->second),
                       std::end(map_iter->second),
-                      std::back_inserter(edges));
+                      std::back_inserter(new_edges));
         }
 
         //add all edges which were not replaced by a shortcut
         auto known_edges = getEdgesOf(i);
         std::copy_if(std::begin(known_edges),
                      std::end(known_edges),
-                     std::back_inserter(edges),
+                     std::back_inserter(new_edges),
                      [&](const auto& known_edge) {
                          const auto& target = known_edge.getDestination();
 
@@ -209,6 +235,29 @@ auto UnidirectionGraph::rebuildBackward(const std::unordered_map<NodeId, std::ve
                                                     std::cend(contracted),
                                                     target);
                      });
+
+        std::sort(std::begin(new_edges),
+                  std::end(new_edges),
+                  [](const auto& lhs, const auto& rhs) {
+                      return lhs.getDestination() < rhs.getDestination();
+                  });
+
+        Edge best = new_edges.front();
+        for(int j{0}; j < new_edges.size(); ++j) {
+            auto edge = new_edges[j];
+
+            if(edge.getDestination() != best.getDestination()) {
+                edges.emplace_back(std::move(best));
+                best = edge;
+            } else {
+                if(best.getCost() > edge.getCost()) {
+                    best = edge;
+                }
+            }
+            if(j == new_edges.size() - 1) {
+                edges.emplace_back(std::move(edge));
+            }
+        }
 
         offset = edges.size();
     }
