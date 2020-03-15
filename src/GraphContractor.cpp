@@ -1,7 +1,7 @@
 #include <Graph.hpp>
-#include <MultiTargetDijkstra.hpp>
 #include <GraphContractor.hpp>
 #include <GraphEssentials.hpp>
+#include <MultiTargetDijkstra.hpp>
 #include <ParallelTransform.hpp>
 #include <UnidirectionGraph.hpp>
 #include <algorithm>
@@ -23,7 +23,8 @@ using pathfinding::MultiTargetDijkstra;
 
 
 GraphContractor::GraphContractor(Graph graph)
-    : graph_(std::move(graph)) {}
+    : graph_(std::move(graph)),
+      dijkstra_(graph_) {}
 
 auto GraphContractor::contractGraph()
     -> void
@@ -44,7 +45,15 @@ auto GraphContractor::contractGraph()
         fmt::print("done with level {}\n", current_level);
     }
 
-    fmt::print("REEEEEE: {}\n", deleted_edges_.size());
+
+    fmt::print("REEEEEEEEEEEEE: {}\n",
+               std::accumulate(std::begin(deleted_edges_),
+                               std::end(deleted_edges_),
+                               0,
+                               [](auto current, auto next) {
+                                   return current + next.second.size();
+                               }));
+
     graph_.addEdges(std::move(deleted_edges_));
     deleted_edges_.clear();
 }
@@ -136,18 +145,20 @@ auto GraphContractor::getDegreeOf(NodeId node) const
     return forward + backward;
 }
 
-auto GraphContractor::contract(NodeId node) const
-    -> std::pair<std::vector<std::pair<NodeId, Edge>>,
+auto GraphContractor::contract(NodeId node)
+    -> std::pair<std::unordered_map<NodeId, std::vector<Edge>>,
                  int>
 {
-    MultiTargetDijkstra dijkstra{graph_};
-
     auto source_edges = graph_.getBackwardEdgesOf(node);
     auto target_edges = graph_.getForwardEdgesOf(node);
 
-    std::vector<std::pair<NodeId, Edge>> shortcuts;
+    std::unordered_map<NodeId, std::vector<Edge>> shortcuts;
+
+    std::size_t number_of_shortcuts{0};
 
     for(auto source_edge : source_edges) {
+        dijkstra_.cleanup();
+
         auto source = source_edge.getDestination();
         auto source_node_cost = source_edge.getCost();
 
@@ -159,37 +170,32 @@ auto GraphContractor::contract(NodeId node) const
                 source_node_cost + node_target_cost;
 
             auto shortest_distance =
-                dijkstra.shortestDistanceFromTo(source,
-                                                target);
+                dijkstra_.shortestDistanceFromTo(source,
+                                                 target);
 
+            // fmt::print("shortest: {}\n", shortest_distance);
+            // fmt::print("over node: {}\n", distance_over_node);
 
             if(shortest_distance >= distance_over_node) {
-                Edge shortcut{shortest_distance, target};
-                shortcuts.emplace_back(source, shortcut);
+                // Edge shortcut{distance_over_node, target};
+                // shortcuts.emplace_back(source, shortcut);
+                shortcuts[source].emplace_back(distance_over_node,
+                                               target);
+                number_of_shortcuts++;
             }
         }
-
-        dijkstra.cleanup();
     }
 
-    fmt::print("contracted {}\n", node);
-    fmt::print("deltete edges: \n");
-    for(auto i : source_edges) {
-        fmt::print("{} -> {}\n", i.getDestination(), node);
-    }
+    fmt::print("REEEEEEEEEEEEE: {}\n",
+               std::accumulate(std::begin(shortcuts),
+                               std::end(shortcuts),
+                               0,
+                               [](auto current, auto next) {
+                                   return current + next.second.size();
+                               }));
 
-    for(auto i : target_edges) {
-        fmt::print("{} -> {}\n", node, i.getDestination());
-    }
 
-	fmt::print("added shortcuts: \n");
-	for(auto[from, edge]: shortcuts){
-	  fmt::print("{} -> {}\n", from, edge.getDestination());
-	}
-
-	
-
-    auto edge_diff = shortcuts.size()
+    auto edge_diff = number_of_shortcuts
         - (source_edges.size() + target_edges.size());
 
     return {shortcuts, edge_diff};
@@ -197,14 +203,21 @@ auto GraphContractor::contract(NodeId node) const
 
 auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
     -> std::pair<
-        std::vector<std::pair<NodeId, Edge>>, // shortcuts
-        std::vector<NodeId>> //contracted nodes
+        std::unordered_map<NodeId, std::vector<Edge>>,
+        std::vector<NodeId>>
 {
-    auto result_vec = transform_par(std::cbegin(independent_set),
-                                    std::cend(independent_set),
-                                    [this](auto node) {
-                                        return contract(node);
-                                    });
+    using ContractionInfo =
+        std::pair<std::unordered_map<NodeId, //source
+                                     std::vector<Edge>>,
+                  int>; //shortcuts
+
+    std::vector<ContractionInfo> result_vec;
+    std::transform(std::cbegin(independent_set),
+                   std::cend(independent_set),
+                   std::back_inserter(result_vec),
+                   [this](auto node) {
+                       return contract(node);
+                   });
 
     auto sum =
         std::accumulate(std::cbegin(result_vec),
@@ -218,10 +231,8 @@ auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
     auto average = static_cast<double>(sum)
         / static_cast<double>(result_vec.size());
 
-    fmt::print("AVERAGE: {}\n", average);
-
-    std::vector<std::pair<NodeId,
-                          Edge>>
+    std::unordered_map<NodeId,
+                       std::vector<Edge>>
         shortcuts;
 
     std::vector<NodeId> contracted_nodes;
@@ -231,10 +242,8 @@ auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
         auto current_node = independent_set[counter++];
 
         if(edgediff <= average) {
-            std::move(std::begin(shortcut),
-                      std::end(shortcut),
-                      std::back_inserter(shortcuts));
-
+            // shortcuts[current_node] = std::move(shortcut[current_node]);
+            shortcuts.insert({current_node, std::move(shortcut[current_node])});
             contracted_nodes.emplace_back(current_node);
         }
     }
@@ -246,25 +255,18 @@ auto GraphContractor::getBestContractions(std::vector<NodeId> independent_set)
         auto source_edges = graph_.getForwardEdgesOf(node);
         auto target_edges = graph_.getBackwardEdgesOf(node);
 
-        std::transform(std::cbegin(source_edges),
-                       std::end(source_edges),
-                       std::back_inserter(deleted_edges_),
-                       [&](auto edge) {
-                           return std::pair{node, std::move(edge)};
-                       });
+        deleted_edges_[node]
+            .insert(std::end(deleted_edges_[node]),
+                    std::begin(source_edges),
+                    std::end(source_edges));
 
-        std::transform(std::cbegin(target_edges),
-                       std::end(target_edges),
-                       std::back_inserter(deleted_edges_),
-                       [&](auto back_edge) {
-                           auto from = back_edge.getDestination();
-                           Edge edge{back_edge.getCost(), node};
-                           return std::pair{from, std::move(edge)};
-                       });
+        for(const auto& edge : target_edges) {
+            const auto& cost = edge.getCost();
+            const auto& from = edge.getDestination();
+
+            deleted_edges_[from].emplace_back(cost, node);
+        }
     }
-
-    fmt::print("contracted: {}\n", contracted_nodes.size());
-    fmt::print("SHORTCUTS: {}\n", shortcuts.size());
 
     return {shortcuts,
             contracted_nodes};

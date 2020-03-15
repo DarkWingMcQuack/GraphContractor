@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <optional>
 #include <span.hpp>
+#include <unordered_map>
 #include <vector>
 
 namespace datastructure {
@@ -34,12 +35,12 @@ public:
     auto setLevelOf(NodeId node, NodeLevel level)
         -> void;
 
-    auto rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
+    auto rebuild(const std::unordered_map<NodeId, std::vector<Edge>>& shortcuts,
                  const std::vector<NodeId>& contracted_nodes,
                  NodeLevel level)
         -> void;
 
-    auto addEdges(std::vector<std::pair<NodeId, Edge>> new_edges)
+    auto addEdges(std::unordered_map<NodeId, std::vector<Edge>> new_edges)
         -> void;
 
     auto getLevels() const

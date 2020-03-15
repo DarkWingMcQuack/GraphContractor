@@ -17,7 +17,7 @@ auto main() -> int
     // fmt::print("read CH Graph...\n");
     // auto ch_graph = readFromAllreadyContractedFile("/home/lukas/Projects/GraphContractor/data/stgtregbz_ch.fmi").value();
     fmt::print("read non-CH Graph...\n");
-    auto graph = readFromNonContractedFile("/home/lukas/Projects/GraphContractor/data/toy.fmi").value();
+    auto graph = readFromNonContractedFile("/home/lukas/Projects/GraphContractor/data/15kSZHK_fmi.txt").value();
     fmt::print("graph build in: {}s\n", t.elapsed());
 
     GraphContractor contractor{graph};
@@ -28,11 +28,7 @@ auto main() -> int
     fmt::print("graph contracted in: {}s\n", t.elapsed());
     auto own_ch_graph = std::move(contractor.getGraph());
 
-	fmt::print("{}", own_ch_graph.toString());
-
-	fmt::print("nodes: {}\n", own_ch_graph.getNumberOfNodes());
-	fmt::print("edges: {}\n", own_ch_graph.getNumberOfEdges());
-
+    // fmt::print("\n\nGRAPH:\n\n{}\n", own_ch_graph.toString());
 
     NodeId from;
     NodeId to;
@@ -49,7 +45,7 @@ auto main() -> int
 
         // t.reset();
         // auto ch_distance = ch_pathfinder.shortestDistanceFromTo(from,
-        //                                                         to);
+        // to);
 
 
         // auto ch_time = t.elapsed();

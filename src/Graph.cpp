@@ -43,7 +43,7 @@ auto Graph::setLevelOf(NodeId node, NodeLevel level)
     node_levels_[node] = level;
 }
 
-auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
+auto Graph::rebuild(const std::unordered_map<NodeId, std::vector<Edge>>& shortcuts,
                     const std::vector<NodeId>& contracted_nodes,
                     NodeLevel level)
     -> void
@@ -77,33 +77,32 @@ auto Graph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
 }
 
 
-auto Graph::addEdges(std::vector<std::pair<NodeId, Edge>> new_edges)
+auto Graph::addEdges(std::unordered_map<NodeId, std::vector<Edge>> new_edges)
     -> void
 {
-    auto partition_iter =
-        std::partition(std::begin(new_edges),
-                       std::end(new_edges),
-                       [&](const auto& pair) {
-                           const auto& [from, edge] = pair;
-                           const auto& to = edge.getDestination();
-                           return node_levels_[from] < node_levels_[to];
-                       });
+    std::unordered_map<NodeId, std::vector<Edge>> forward_edges;
+    std::unordered_map<NodeId, std::vector<Edge>> backward_edges;
 
-
+    for(auto&& [from, edges] : std::move(new_edges)) {
+        for(auto&& edge : std::move(edges)) {
+            const auto& target = edge.getDestination();
+            if(getLevelOf(from) < getLevelOf(target)) {
+                forward_edges[from].emplace_back(std::move(edge));
+            } else {
+                backward_edges[from].emplace_back(std::move(edge));
+            }
+        }
+    }
 
     auto forward_fut =
         std::async(std::launch::async,
                    [&] {
-                       std::vector forward_edges(std::begin(new_edges),
-                                                 partition_iter);
                        forward_graph_.rebuild(forward_edges, {});
                    });
 
     auto backward_fut =
         std::async(std::launch::async,
                    [&] {
-                       std::vector backward_edges(partition_iter,
-                                                  std::end(new_edges));
                        backward_graph_.rebuildBackward(backward_edges, {});
                    });
 

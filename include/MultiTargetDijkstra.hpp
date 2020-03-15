@@ -19,6 +19,12 @@ public:
                                 const datastructure::NodeId& target)
         -> datastructure::Distance;
 
+    auto shortestDistanceForContraction(const datastructure::NodeId& source,
+                                        const datastructure::NodeId& target,
+                                        const datastructure::NodeId& contracted_node,
+										datastructure::Distance cost_limit)
+        -> datastructure::Distance;
+
     auto cleanup()
         -> void;
 

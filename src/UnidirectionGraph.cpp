@@ -7,6 +7,7 @@
 #include <span.hpp>
 
 using datastructure::Edge;
+using datastructure::NodeId;
 using datastructure::UnidirectionGraph;
 
 UnidirectionGraph::UnidirectionGraph(std::vector<std::vector<Edge>> adjacency_list)
@@ -97,7 +98,7 @@ void transform_if(InputIt first, InputIt last, OutputIt dest, Pred pred, Fct tra
 } // namespace
 
 
-auto UnidirectionGraph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
+auto UnidirectionGraph::rebuild(const std::unordered_map<NodeId, std::vector<Edge>>& shortcuts,
                                 const std::vector<NodeId>& contracted)
     -> void
 {
@@ -115,23 +116,15 @@ auto UnidirectionGraph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shor
                                i);
 
         if(is_contracted) {
-		  fmt::print("JUMP OVER {}\n", i);
             continue;
         }
 
-        //add all shortcuts of node i
-        transform_if(
-            std::begin(shortcuts),
-            std::end(shortcuts),
-            std::back_inserter(edges),
-            [i](const auto& shortcut) {
-                const auto& [node, _] = shortcut;
-                return node == i;
-            },
-            [](const auto& shortcut) {
-                return shortcut.second;
-            });
-
+        auto map_iter = shortcuts.find(i);
+        if(map_iter != shortcuts.end()) {
+            std::copy(std::begin(map_iter->second),
+                      std::end(map_iter->second),
+                      std::back_inserter(edges));
+        }
 
         //add all edges which were not replaced by a shortcut
         auto known_edges = getEdgesOf(i);
@@ -149,18 +142,40 @@ auto UnidirectionGraph::rebuild(const std::vector<std::pair<NodeId, Edge>>& shor
         offset = edges.size();
     }
 
-    offsets.at(offset_array_.size() - 1) = edges.size();
+    offsets[offset_array_.size() - 1] = edges.size();
 
     edges_ = std::move(edges);
     offset_array_ = std::move(offsets);
 }
 
-auto UnidirectionGraph::rebuildBackward(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
+namespace {
+
+auto switch_direction(const std::unordered_map<NodeId, std::vector<Edge>>& shortcuts)
+{
+    std::unordered_map<datastructure::NodeId, std::vector<Edge>> ret_map;
+
+    for(const auto& [to, neigs] : shortcuts) {
+        for(const auto& edge : neigs) {
+            const auto& from = edge.getDestination();
+            const auto& cost = edge.getCost();
+
+            ret_map[from].emplace_back(cost, to);
+        }
+    }
+
+    return ret_map;
+}
+
+} // namespace
+
+auto UnidirectionGraph::rebuildBackward(const std::unordered_map<NodeId, std::vector<Edge>>& shortcuts,
                                         const std::vector<NodeId>& contracted)
     -> void
 {
     std::vector<NodeOffset> offsets(offset_array_.size(), 0);
     std::vector<Edge> edges;
+
+    auto switched_edges = switch_direction(shortcuts);
 
     NodeOffset offset{0};
     for(int i{0}; i < offset_array_.size() - 1; i++) {
@@ -175,20 +190,12 @@ auto UnidirectionGraph::rebuildBackward(const std::vector<std::pair<NodeId, Edge
             continue;
         }
 
-        //add all shortcuts of node i
-        transform_if(
-            std::begin(shortcuts),
-            std::end(shortcuts),
-            std::back_inserter(edges),
-            [i](const auto& shortcut) {
-                const auto& [_, edge] = shortcut;
-                return edge.getDestination() == i;
-            },
-            [](auto shortcut) {
-                auto [from, edge] = std::move(shortcut);
-                edge.setDestination(from);
-                return edge;
-            });
+        auto map_iter = switched_edges.find(i);
+        if(map_iter != switched_edges.end()) {
+            std::copy(std::begin(map_iter->second),
+                      std::end(map_iter->second),
+                      std::back_inserter(edges));
+        }
 
         //add all edges which were not replaced by a shortcut
         auto known_edges = getEdgesOf(i);

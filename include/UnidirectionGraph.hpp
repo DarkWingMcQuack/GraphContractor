@@ -3,6 +3,7 @@
 #include <GraphEssentials.hpp>
 #include <cstdint>
 #include <span.hpp>
+#include <unordered_map>
 #include <vector>
 
 namespace datastructure {
@@ -21,11 +22,11 @@ public:
     auto getEdgesOf(const NodeId& node) const
         -> tcb::span<const Edge>;
 
-    auto rebuild(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
+    auto rebuild(const std::unordered_map<NodeId, std::vector<Edge>>& shortcuts,
                  const std::vector<NodeId>& contracted)
         -> void;
 
-    auto rebuildBackward(const std::vector<std::pair<NodeId, Edge>>& shortcuts,
+    auto rebuildBackward(const std::unordered_map<NodeId, std::vector<Edge>>& shortcuts,
                          const std::vector<NodeId>& contracted)
         -> void;
 

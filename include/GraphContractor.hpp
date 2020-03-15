@@ -1,11 +1,13 @@
 #pragma once
 
-#include "Graph.hpp"
+#include <Graph.hpp>
 #include <GraphEssentials.hpp>
+#include <MultiTargetDijkstra.hpp>
 #include <UnidirectionGraph.hpp>
 #include <cstdint>
 #include <functional>
 #include <span.hpp>
+#include <unordered_map>
 #include <vector>
 
 namespace datastructure {
@@ -32,12 +34,8 @@ private:
     auto numberOfOutgoingEdges(NodeId node) const
         -> std::int64_t;
 
-    auto contract(const std::vector<NodeId>& nodes) const
-        -> std::pair<std::vector<std::pair<NodeId, Edge>>,
-                     std::size_t>; //number of deleted edges
-
-    auto contract(NodeId node) const
-        -> std::pair<std::vector<std::pair<NodeId, Edge>>,
+    auto contract(NodeId node)
+        -> std::pair<std::unordered_map<NodeId, std::vector<Edge>>,
                      int>; //deleted edges - shortcuts
 
     auto constructIndependentSet() const
@@ -51,14 +49,14 @@ private:
 
     auto getBestContractions(std::vector<NodeId> independent_set)
         -> std::pair<
-            std::vector<std::pair<NodeId, Edge>>, //shortcuts
+            std::unordered_map<NodeId, std::vector<Edge>>,
             std::vector<NodeId>>; //contracted nodes
 
 private:
     Graph graph_;
+    pathfinding::MultiTargetDijkstra dijkstra_;
     NodeLevel current_level{0};
-    std::int64_t already_contracted{0};
-    std::vector<std::pair<NodeId, Edge>> deleted_edges_;
+    std::unordered_map<NodeId, std::vector<Edge>> deleted_edges_;
 };
 
 } // namespace datastructure

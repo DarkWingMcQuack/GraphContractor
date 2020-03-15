@@ -58,7 +58,6 @@ auto CHDijkstra::fillForwardInfo(const datastructure::NodeId& source)
             auto dest = edge.getDestination();
             auto new_cost = weight + cost_to_current;
 
-
             if(new_cost < forward_shortest_distances_[dest]) {
                 queue.emplace(new_cost, dest);
                 forward_shortest_distances_[dest] = new_cost;
