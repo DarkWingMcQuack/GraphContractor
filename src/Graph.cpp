@@ -66,7 +66,7 @@ auto Graph::addEdges(std::unordered_map<NodeId, std::vector<Edge>> new_edges)
     std::unordered_map<NodeId, std::vector<Edge>> forward_edges;
     std::unordered_map<NodeId, std::vector<Edge>> backward_edges;
 
-    fmt::print("build edges\n");
+    fmt::print("building edges\n");
     for(auto&& [from, edges] : std::move(new_edges)) {
         for(auto&& edge : std::move(edges)) {
             const auto& target = edge.getDestination();
@@ -80,16 +80,16 @@ auto Graph::addEdges(std::unordered_map<NodeId, std::vector<Edge>> new_edges)
 
 	new_edges.clear();
 
-    fmt::print("build edges done\n");
+    fmt::print("edges build\n");
 
-    fmt::print("rebuild forward\n");
+    fmt::print("rebuilding forward graph\n");
     forward_graph_.rebuild(forward_edges, {});
-    fmt::print("rebuild forward done\n");
+    fmt::print("forward graph done\n");
 
-    fmt::print("rebuild back\n");
+    fmt::print("rebuild back graph\n");
 
     backward_graph_.rebuildBackward(backward_edges, {});
-    fmt::print("rebuild back done\n");
+    fmt::print("back graph done\n");
 }
 
 auto Graph::getNumberOfNodes() const
@@ -109,41 +109,6 @@ auto Graph::getLevels() const
 {
     return node_levels_;
 }
-
-auto Graph::toString() const
-    -> std::string
-{
-    std::string ret = "Upwards: \n";
-    for(int node{0}; node < getNumberOfNodes(); node++) {
-        auto level = getLevelOf(node);
-        ret += +"(" + std::to_string(level) + ")" + std::to_string(node);
-        ret += " -> ";
-
-        auto outgoing = getForwardEdgesOf(node);
-
-        for(auto edge : outgoing) {
-            ret += std::to_string(edge.getDestination()) + ", ";
-        }
-        ret += "\n";
-    }
-
-    ret += "Downwards: \n";
-    for(int node{0}; node < getNumberOfNodes(); node++) {
-        auto level = getLevelOf(node);
-        ret += +"(" + std::to_string(level) + ")" + std::to_string(node);
-        ret += " -> ";
-
-        auto outgoing = getBackwardEdgesOf(node);
-
-        for(auto edge : outgoing) {
-            ret += std::to_string(edge.getDestination()) + ", ";
-        }
-        ret += "\n";
-    }
-
-    return ret;
-}
-
 
 auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     -> std::optional<Graph>
@@ -184,7 +149,7 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     int elevation;
     NodeLevel level;
 
-    for(int i{0}; i < number_of_nodes; i++) {
+    for(size_t i{0}; i < number_of_nodes; i++) {
         in >> node >> id2 >> latitude >> longitude >> elevation >> level;
         node_levels[node] = level;
     }
@@ -202,7 +167,7 @@ auto datastructure::readFromAllreadyContractedFile(std::string_view path)
     std::vector backward_edges(number_of_nodes,
                                std::vector<Edge>{});
 
-    for(int i{0}; i < number_of_edges; i++) {
+    for(size_t i{0}; i < number_of_edges; i++) {
         in >> from >> to >> cost >> speed >> type >> child1 >> child2;
 
         forward_edges[from].emplace_back(cost, to);
@@ -268,7 +233,7 @@ auto datastructure::readFromNonContractedFile(std::string_view path)
     double latitude, longitude;
     int elevation;
 
-    for(int i{0}; i < number_of_nodes; i++) {
+    for(size_t i{0}; i < number_of_nodes; i++) {
         in >> node >> id2 >> latitude >> longitude >> elevation;
     }
 
@@ -283,7 +248,7 @@ auto datastructure::readFromNonContractedFile(std::string_view path)
     std::vector backward_edges(number_of_nodes,
                                std::vector<Edge>{});
 
-    for(int i{0}; i < number_of_edges; i++) {
+    for(size_t i{0}; i < number_of_edges; i++) {
         in >> from >> to >> cost >> speed >> type;
 
         forward_edges[from].emplace_back(cost, to);

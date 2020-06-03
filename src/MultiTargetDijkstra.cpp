@@ -32,7 +32,7 @@ auto MultiTargetDijkstra::shortestDistanceFromTo(const NodeId& source,
     }
 
     //count how many targets are already settled
-    auto settled_target_count =
+    size_t settled_target_count =
         std::count_if(std::cbegin(targets),
                       std::cend(targets),
                       [&](auto&& target) {

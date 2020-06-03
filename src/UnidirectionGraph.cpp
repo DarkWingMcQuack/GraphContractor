@@ -18,7 +18,7 @@ UnidirectionGraph::UnidirectionGraph(std::vector<std::vector<Edge>> adjacency_li
     std::vector<Edge> edges;
 
     NodeOffset offset{0};
-    for(int i{0}; i < adjacency_list.size(); i++) {
+    for(size_t i{0}; i < adjacency_list.size(); i++) {
         offsets[i] = offset;
         std::move(std::cbegin(adjacency_list[i]),
                   std::cend(adjacency_list[i]),
@@ -40,7 +40,7 @@ UnidirectionGraph::UnidirectionGraph(std::vector<std::vector<Edge>> adjacency_li
                           std::vector<Edge>{});
 
     //erase edges where level[source] >= level[target]
-    for(int from{0}; from < adjacency_list.size(); from++) {
+    for(size_t from{0}; from < adjacency_list.size(); from++) {
         std::copy_if(std::make_move_iterator(std::begin(adjacency_list[from])),
                      std::make_move_iterator(std::end(adjacency_list[from])),
                      std::back_inserter(new_edges[from]),
@@ -90,7 +90,7 @@ auto UnidirectionGraph::rebuild(const std::unordered_map<NodeId, std::vector<Edg
     edges.reserve(edges_.size());
 
     NodeOffset offset{0};
-    for(int i{0}; i < offset_array_.size() - 1; i++) {
+    for(size_t i{0}; i < offset_array_.size() - 1; i++) {
         std::vector<Edge> new_edges;
         offsets[i] = offset;
 
@@ -130,7 +130,7 @@ auto UnidirectionGraph::rebuild(const std::unordered_map<NodeId, std::vector<Edg
                   });
 
         Edge best = new_edges.front();
-        for(int j{0}; j < new_edges.size(); ++j) {
+        for(size_t j{0}; j < new_edges.size(); ++j) {
             auto edge = new_edges[j];
 
             if(edge.getDestination() != best.getDestination()) {
@@ -185,71 +185,4 @@ auto UnidirectionGraph::rebuildBackward(const std::unordered_map<NodeId, std::ve
     auto switched_edges = switch_direction(shortcuts);
 
 	rebuild(switched_edges, contracted);
-
-    // NodeOffset offset{0};
-    // for(int i{0}; i < offset_array_.size() - 1; i++) {
-    //     offsets[i] = offset;
-
-    //     std::vector<Edge> new_edges;
-
-    //     auto is_contracted =
-    //         std::binary_search(std::cbegin(contracted),
-    //                            std::cend(contracted),
-    //                            i);
-
-    //     if(is_contracted) {
-    //         continue;
-    //     }
-
-    //     auto map_iter = switched_edges.find(i);
-    //     if(map_iter != switched_edges.end()) {
-    //         std::copy(std::begin(map_iter->second),
-    //                   std::end(map_iter->second),
-    //                   std::back_inserter(new_edges));
-    //     }
-
-    //     //add all edges which were not replaced by a shortcut
-    //     auto known_edges = getEdgesOf(i);
-    //     std::copy_if(std::begin(known_edges),
-    //                  std::end(known_edges),
-    //                  std::back_inserter(new_edges),
-    //                  [&](const auto& known_edge) {
-    //                      const auto& target = known_edge.getDestination();
-
-    //                      return !std::binary_search(std::cbegin(contracted),
-    //                                                 std::cend(contracted),
-    //                                                 target);
-    //                  });
-
-    //     std::sort(std::begin(new_edges),
-    //               std::end(new_edges),
-    //               [](const auto& lhs, const auto& rhs) {
-    //                   return lhs.getDestination() < rhs.getDestination();
-    //               });
-
-    //     Edge best = new_edges.front();
-    //     for(int j{0}; j < new_edges.size(); ++j) {
-    //         auto edge = new_edges[j];
-
-    //         if(edge.getDestination() != best.getDestination()) {
-    //             edges.emplace_back(std::move(best));
-    //             best = edge;
-    //         } else {
-    //             if(best.getCost() > edge.getCost()) {
-    //                 best = edge;
-    //             }
-    //         }
-    //         if(j == new_edges.size() - 1) {
-    //             edges.emplace_back(std::move(edge));
-    //         }
-    //     }
-
-    //     offset = edges.size();
-    // }
-
-    // // offsets[offset_array_.size()] = edges.size();
-    // offsets[offset_array_.size() - 1] = edges.size();
-
-    // edges_ = std::move(edges);
-    // offset_array_ = std::move(offsets);
 }

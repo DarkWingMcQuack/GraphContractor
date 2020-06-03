@@ -25,7 +25,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 ###get external projects
 ############################
 include(cmake/fmt.cmake)
-include(cmake/span.cmake)
 include(cmake/CLI11.cmake)
 
 #setup flags and ccache
@@ -63,8 +62,6 @@ target_sources(GraphContractor
 target_include_directories(GraphContractor PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   fmt
-  span
-  ${SPAN_INCLUDE_DIR}
   ${CLI11_INCLUDE_DIR})
 
 #link against libarys
@@ -74,5 +71,4 @@ target_link_libraries(GraphContractor LINK_PUBLIC
 
 #make sure everything is build in the right order
 add_dependencies(GraphContractor fmt-project)
-add_dependencies(GraphContractor span-project)
 add_dependencies(GraphContractor CLI11-project)
